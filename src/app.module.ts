@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { BiomedsandraApiModule } from './biomedsandra-api/biomedsandra-api.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { APP_GUARD } from '@nestjs/core';
         ignoreUserAgents: [/Googlebot/],
       },
     ]),
+    BiomedsandraApiModule,
   ],
   controllers: [],
   providers: [
