@@ -14,7 +14,7 @@ services:
   db:
     image: postgres:13
     env_file:
-      - .env.development  # Carregar variáveis de ambiente do arquivo .env
+      - .env.development
     ports:
       - "5432:5432"
     volumes:
