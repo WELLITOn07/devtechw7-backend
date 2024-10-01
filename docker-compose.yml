@@ -3,7 +3,7 @@ services:
   app:
     build: .
     env_file:
-      - .env.development 
+      - .env.development
     ports:
       - "3000:3000"
     volumes:
@@ -14,9 +14,7 @@ services:
     command: >
       sh -c "sleep 10 &&
              npx prisma migrate deploy --schema /app/prisma/schema.prisma &&
-             npx prisma migrate deploy --schema /app/src/biomedsandra-api/course/prisma/schema.prisma &&
              npx prisma generate --schema /app/prisma/schema.prisma &&
-             npx prisma generate --schema /app/src/biomedsandra-api/course/prisma/schema.prisma &&
              npm run dev"
 
   db:

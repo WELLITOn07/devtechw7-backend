@@ -7,12 +7,12 @@ async function bootstrap() {
   const prisma = new PrismaClient();
   await prisma.$connect();
   const app = await NestFactory.create(AppModule);
-  app.enableCors({
-    origin: 'http://localhost:4200',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
-  });
+  // app.enableCors({
+  //   origin: 'http://localhost:4200',
+  //   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  //   preflightContinue: false,
+  //   optionsSuccessStatus: 204,
+  // });
   app.useGlobalPipes(new ValidationPipe());
   await app.listen(3000);
 }

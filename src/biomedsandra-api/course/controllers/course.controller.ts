@@ -16,6 +16,13 @@ import { CourseService } from '../services/course.service';
 export class CourseController {
   constructor(private readonly courseService: CourseService) {}
 
+  @Get('health-check')
+  async healthCheck(): Promise<any> {
+    return {
+      status: 'ok',
+    };
+  }
+  
   @Post()
   async createCourse(@Body() data: Prisma.CourseCreateInput): Promise<Course> {
     return this.courseService.createCourse(data);
@@ -43,15 +50,4 @@ export class CourseController {
   async deleteCourse(@Param('id') id: string): Promise<Course> {
     return this.courseService.deleteCourse(id);
   }
-
-  @Get('health-check')
-  async healthCheck(): Promise<string> {
-    try {
-      await this.courseService.getCourses();
-      return 'OK';
-    } catch (error) {
-      throw new HttpException('Erro ao realizar o health-check', HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
 }
-

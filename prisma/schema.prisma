@@ -6,10 +6,8 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["public", "course"]  
+  schemas  = ["public", "course"]  // Definindo múltiplos schemas
 }
-
-
 
 model User {
   id        Int      @id @default(autoincrement())
@@ -17,5 +15,49 @@ model User {
   name      String?
   createdAt DateTime @default(now())
 
-  @@schema("public")  
+  @@schema("public") 
+}
+
+model Course {
+  id          String   @id
+  title       String
+  description String
+  cover       String
+  link        String
+  type        String
+  price       Price     @relation("CourseToPrice", fields: [priceId], references: [id])
+  priceId     Int
+  subjects    Subject[]
+  works       Work[]
+
+  @@schema("course")  
+}
+
+model Price {
+  id         Int    @id @default(autoincrement())
+  original   String
+  discounted String
+  courses    Course[] @relation("CourseToPrice")
+
+  @@schema("course")  
+}
+
+model Subject {
+  id       Int      @id @default(autoincrement())
+  category String
+  topics   String[]
+  courseId String
+  course   Course   @relation(fields: [courseId], references: [id])
+
+  @@schema("course")  
+}
+
+model Work {
+  id       Int     @id @default(autoincrement())
+  title    String
+  url      String
+  courseId String
+  course   Course   @relation(fields: [courseId], references: [id])
+
+  @@schema("course") 
 }
