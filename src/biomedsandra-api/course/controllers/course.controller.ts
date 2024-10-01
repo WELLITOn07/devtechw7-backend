@@ -6,8 +6,6 @@ import {
   Param,
   Put,
   Delete,
-  HttpException,
-  HttpStatus,
 } from '@nestjs/common';
 import { Course, Prisma } from '@prisma/client';
 import { CourseService } from '../services/course.service';

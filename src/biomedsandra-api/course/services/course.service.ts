@@ -9,16 +9,32 @@ export class CourseService {
   async createCourse(data: Prisma.CourseCreateInput): Promise<Course> {
     return this.prisma.course.create({
       data,
+      include: {
+        price: true,
+        subjects: true,
+        works: true,
+      },
     });
   }
 
   async getCourses(): Promise<Course[]> {
-    return this.prisma.course.findMany();
+    return this.prisma.course.findMany({
+      include: {
+        price: true,
+        subjects: true,
+        works: true,
+      },
+    });
   }
 
   async getCourseById(id: string): Promise<Course | null> {
     return this.prisma.course.findUnique({
       where: { id },
+      include: {
+        price: true,
+        subjects: true,
+        works: true,
+      },
     });
   }
 
@@ -29,12 +45,22 @@ export class CourseService {
     return this.prisma.course.update({
       where: { id },
       data,
+      include: {
+        price: true,
+        subjects: true,
+        works: true,
+      },
     });
   }
 
   async deleteCourse(id: string): Promise<Course> {
     return this.prisma.course.delete({
       where: { id },
+      include: {
+        price: true,
+        subjects: true,
+        works: true,
+      },
     });
   }
 }
