@@ -11,8 +11,11 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-# Gera o Prisma Client
-RUN npx prisma generate
+# Gera o Prisma Client após a migração de ambos os schemas
+RUN npx prisma migrate deploy --schema=/app/prisma/schema.prisma
+RUN npx prisma migrate deploy --schema=/app/src/biomedsandra-api/course/prisma/schema.prisma
+RUN npx prisma generate --schema=/app/prisma/schema.prisma
+RUN npx prisma generate --schema=/app/src/biomedsandra-api/course/prisma/schema.prisma
 
 # Etapa 2: Produção
 FROM node:18-alpine AS production
@@ -26,6 +29,8 @@ RUN npm install --only=production
 # Copia o build da etapa anterior
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/src/biomedsandra-api/course/prisma ./src/biomedsandra-api/course/prisma
 
 # Define a variável de ambiente padrão como "production"
 ENV NODE_ENV production

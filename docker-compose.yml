@@ -9,7 +9,15 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-    command: npm run dev
+    depends_on:
+      - db
+    command: >
+      sh -c "sleep 10 &&
+             npx prisma migrate deploy --schema /app/prisma/schema.prisma &&
+             npx prisma migrate deploy --schema /app/src/biomedsandra-api/course/prisma/schema.prisma &&
+             npx prisma generate --schema /app/prisma/schema.prisma &&
+             npx prisma generate --schema /app/src/biomedsandra-api/course/prisma/schema.prisma &&
+             npm run dev"
 
   db:
     image: postgres:13

@@ -23,7 +23,6 @@ import { PrismaService } from './database/prisma.service';
     ]),
     BiomedsandraApiModule,
   ],
-  controllers: [],
   providers: [
     {
       provide: APP_GUARD,
