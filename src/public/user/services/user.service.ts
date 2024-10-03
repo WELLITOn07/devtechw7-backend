@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { User, Prisma } from '@prisma/client';
-import { PrismaService } from 'src/database/prisma.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { UserRole } from '../models/user-rule.enum';
 
 @Injectable()
@@ -11,7 +11,7 @@ export class UserService {
     return this.prisma.user.create({
       data: {
         ...data,
-        role: data.role || UserRole.COMMON, 
+        role: data.role || UserRole.COMMON,
       },
     });
   }

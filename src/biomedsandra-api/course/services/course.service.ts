@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Course, Prisma } from '@prisma/client';
-import { PrismaService } from 'src/database/prisma.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class CourseService {
@@ -48,7 +48,7 @@ export class CourseService {
         ...data,
         price: data.price,
         subjects: data.subjects,
-        works: data.works, 
+        works: data.works,
       },
       include: {
         price: true,
