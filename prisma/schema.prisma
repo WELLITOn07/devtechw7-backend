@@ -8,12 +8,13 @@ datasource db {
   url      = env("DATABASE_URL")
   schemas  = ["public", "course"]
 }
-
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
-  name      String?
+  name      String
   createdAt DateTime @default(now()) 
+  role      String @default("COMMON")
+  apps      String[] 
 
   @@schema("public") 
 }
