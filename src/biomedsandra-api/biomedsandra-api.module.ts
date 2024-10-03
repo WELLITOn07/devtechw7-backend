@@ -4,7 +4,8 @@ import { CourseController } from './course/controllers/course.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
+  imports: [PrismaModule],
   controllers: [CourseController],
-  providers: [CourseService, PrismaModule],
+  providers: [CourseService],
 })
 export class BiomedsandraApiModule {}
