@@ -13,6 +13,7 @@ async function bootstrap() {
   //   preflightContinue: false,
   //   optionsSuccessStatus: 204,
   // });
+  app.useGlobalInterceptors();
   app.useGlobalPipes(new ValidationPipe());
   await app.listen(3000);
 }
