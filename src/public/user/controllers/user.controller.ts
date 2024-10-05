@@ -4,13 +4,11 @@ import {
   Post,
   Put,
   Delete,
-  Param,
   Body,
-  ParseIntPipe,
 } from '@nestjs/common';
 import { UserService } from '../services/user.service';
 import { User, Prisma } from '@prisma/client';
-import { ParamId } from 'src/public/decorators/param-id.decorator';
+import { ParamNumberId } from 'src/public/decorators/param-number-id.decorator';
 
 @Controller('user')
 export class UserController {
@@ -23,7 +21,7 @@ export class UserController {
 
   @Get(':id')
   async getUserById(
-    @ParamId('id', ParseIntPipe) id: number,
+    @ParamNumberId() id: number,
   ): Promise<User | null> {
     return this.userService.getUserById(id);
   }
@@ -35,14 +33,14 @@ export class UserController {
 
   @Put(':id')
   async updateUser(
-    @ParamId('id', ParseIntPipe) id: number,
+    @ParamNumberId() id: number,
     @Body() data: Prisma.UserUpdateInput,
   ): Promise<User> {
     return this.userService.updateUser(id, data);
   }
 
   @Delete(':id')
-  async deleteUser(@ParamId('id', ParseIntPipe) id: number): Promise<User> {
+  async deleteUser(@ParamNumberId() id: number): Promise<User> {
     return this.userService.deleteUser(id);
   }
 }
