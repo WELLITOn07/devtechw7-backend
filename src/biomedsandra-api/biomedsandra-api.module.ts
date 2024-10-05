@@ -7,7 +7,7 @@ import {
 import { CourseService } from './course/services/course.service';
 import { CourseController } from './course/controllers/course.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
-import { CourseIdCheckMiddleware } from './course/middlewares/course-id-check.middleware';
+import { CheckStringIdMiddleware } from 'src/public/middlewares/check-string-id.middleware';
 
 @Module({
   imports: [PrismaModule],
@@ -16,7 +16,7 @@ import { CourseIdCheckMiddleware } from './course/middlewares/course-id-check.mi
 })
 export class BiomedsandraApiModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(CourseIdCheckMiddleware).forRoutes({
+    consumer.apply(CheckStringIdMiddleware).forRoutes({
       path: 'courses/:id',
       method: RequestMethod.ALL,
     });
