@@ -3,18 +3,24 @@ services:
   app:
     build: .
     env_file:
-      - .env.development 
+      - .env.development
     ports:
       - "3000:3000"
     volumes:
       - .:/app
       - /app/node_modules
-    command: npm run dev
+    depends_on:
+      - db
+    command: >
+      sh -c "sleep 10 &&
+             npx prisma migrate deploy --schema /app/prisma/schema.prisma &&
+             npx prisma generate --schema /app/prisma/schema.prisma &&
+             npm run dev"
 
   db:
     image: postgres:13
     env_file:
-      - .env.development  # Carregar variáveis de ambiente do arquivo .env
+      - .env.development
     ports:
       - "5432:5432"
     volumes:

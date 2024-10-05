@@ -11,8 +11,9 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-# Gera o Prisma Client
-RUN npx prisma generate
+# Gera o Prisma Client e executa as migrações após o build
+RUN npx prisma migrate deploy --schema=/app/prisma/schema.prisma
+RUN npx prisma generate --schema=/app/prisma/schema.prisma
 
 # Etapa 2: Produção
 FROM node:18-alpine AS production
@@ -26,6 +27,7 @@ RUN npm install --only=production
 # Copia o build da etapa anterior
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/prisma ./prisma
 
 # Define a variável de ambiente padrão como "production"
 ENV NODE_ENV production
