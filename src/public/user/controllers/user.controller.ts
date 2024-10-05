@@ -6,21 +6,15 @@ import {
   Delete,
   Param,
   Body,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { UserService } from '../services/user.service';
 import { User, Prisma } from '@prisma/client';
+import { ParamId } from 'src/public/decorators/param-id.decorator';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
-  @Get('healthCheck')
-  async healthCheck(): Promise<any> {
-    return {
-      status: 'ok',
-      message: 'Service is up and running',
-    };
-  }
 
   @Get()
   async getUsers(): Promise<User[]> {
@@ -28,7 +22,9 @@ export class UserController {
   }
 
   @Get(':id')
-  async getUserById(@Param('id') id: string): Promise<User | null> {
+  async getUserById(
+    @ParamId('id', ParseIntPipe) id: number,
+  ): Promise<User | null> {
     return this.userService.getUserById(id);
   }
 
@@ -39,18 +35,14 @@ export class UserController {
 
   @Put(':id')
   async updateUser(
-    @Param('id') id: string,
+    @ParamId('id', ParseIntPipe) id: number,
     @Body() data: Prisma.UserUpdateInput,
-    @Body('adminId') adminId: string,
   ): Promise<User> {
-    return this.userService.updateUser(adminId, id, data);
+    return this.userService.updateUser(id, data);
   }
 
   @Delete(':id')
-  async deleteUser(
-    @Param('id') id: string,
-    @Body('adminId') adminId: string,
-  ): Promise<User> {
-    return this.userService.deleteUser(adminId, id);
+  async deleteUser(@ParamId('id', ParseIntPipe) id: number): Promise<User> {
+    return this.userService.deleteUser(id);
   }
 }

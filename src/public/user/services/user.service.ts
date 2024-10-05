@@ -2,7 +2,6 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
-  ForbiddenException,
 } from '@nestjs/common';
 import { User, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -33,16 +32,10 @@ export class UserService {
     return this.prisma.user.findMany();
   }
 
-  async getUserById(id: string): Promise<User> {
-    const parsedId = parseInt(id, 10);
-
-    if (isNaN(parsedId)) {
-      throw new NotFoundException('Invalid user ID');
-    }
-
+  async getUserById(id: number): Promise<User> {
     const user = await this.prisma.user.findUnique({
       where: {
-        id: parsedId,
+        id: id,
       },
     });
 
@@ -53,48 +46,28 @@ export class UserService {
     return user;
   }
 
-  async updateUser(
-    adminId: string,
-    id: string,
-    data: Prisma.UserUpdateInput,
-  ): Promise<User> {
-    const adminUser = await this.getUserById(adminId);
-
-    if (adminUser.role !== UserRole.ADMIN) {
-      throw new ForbiddenException('Only admins can update users');
-    }
-
+  async updateUser(id: number, data: Prisma.UserUpdateInput): Promise<User> {
     const userToUpdate = await this.getUserById(id);
 
-    if (userToUpdate.role === UserRole.ADMIN) {
-      throw new ConflictException('Admin cannot be changed');
+    if (!userToUpdate) {
+      throw new NotFoundException('User not found');
     }
 
     return this.prisma.user.update({
-      where: { id: parseInt(id) },
+      where: { id: id },
       data,
     });
   }
 
-  async deleteUser(adminId: string, id: string): Promise<User> {
-    const adminUser = await this.getUserById(adminId);
-
-    if (adminUser.role !== UserRole.ADMIN) {
-      throw new ForbiddenException('Only admins can delete users');
-    }
-
+  async deleteUser(id: number): Promise<User> {
     const userToDelete = await this.getUserById(id);
 
     if (!userToDelete) {
       throw new NotFoundException('User not found');
     }
 
-    if (userToDelete.role === UserRole.ADMIN) {
-      throw new ConflictException('Admin cannot be deleted');
-    }
-
     return this.prisma.user.delete({
-      where: { id: parseInt(id, 10) },
+      where: { id: id },
     });
   }
 }
