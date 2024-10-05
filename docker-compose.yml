@@ -4,12 +4,14 @@ services:
     build: .
     container_name: nestjs-app
     env_file:
-      - .env.development
+      - .env.development 
+    environment:
+      - NODE_ENV=${NODE_ENV:-development} # Define NODE_ENV, mas permite sobrescrever
     ports:
-      - "3000:3000"    
-      - "9229:9229"    
+      - "3000:3000"
+      - "9229:9229"
     volumes:
-      - .:/app         
+      - .:/app
       - /app/node_modules
     depends_on:
       - db
@@ -17,7 +19,7 @@ services:
       sh -c "sleep 10 &&
              npx prisma migrate deploy --schema /app/prisma/schema.prisma &&
              npx prisma generate --schema /app/prisma/schema.prisma &&
-             npm run start:debug"
+             npm run start:debug" # No desenvolvimento, usamos o debug
 
   db:
     image: postgres:13

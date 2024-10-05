@@ -1,4 +1,8 @@
-import { ForbiddenException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { UserRole } from '../models/user-rule.enum';
 import { UserService } from '../services/user.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -117,6 +121,25 @@ describe('UserService', () => {
 
       await expect(service.deleteUser('1', '2')).rejects.toThrow(
         ForbiddenException,
+      );
+    });
+
+    it('should throw NotFoundException if the user to be deleted is not found', async () => {
+      const adminUser = {
+        id: 1,
+        email: 'admin@example.com',
+        name: 'Admin User',
+        role: UserRole.ADMIN,
+      };
+
+      (prismaService.user.findUnique as jest.Mock).mockResolvedValueOnce(
+        adminUser,
+      );
+
+      (prismaService.user.findUnique as jest.Mock).mockResolvedValueOnce(null);
+
+      await expect(service.deleteUser('1', '2')).rejects.toThrow(
+        NotFoundException,
       );
     });
   });

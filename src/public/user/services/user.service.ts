@@ -2,7 +2,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
-  ForbiddenException, // Importamos para lançar exceção de permissão
+  ForbiddenException,
 } from '@nestjs/common';
 import { User, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -34,8 +34,16 @@ export class UserService {
   }
 
   async getUserById(id: string): Promise<User> {
+    const parsedId = parseInt(id, 10);
+
+    if (isNaN(parsedId)) {
+      throw new NotFoundException('Invalid user ID');
+    }
+
     const user = await this.prisma.user.findUnique({
-      where: { id: parseInt(id) },
+      where: {
+        id: parsedId,
+      },
     });
 
     if (!user) {
@@ -77,12 +85,16 @@ export class UserService {
 
     const userToDelete = await this.getUserById(id);
 
+    if (!userToDelete) {
+      throw new NotFoundException('User not found');
+    }
+
     if (userToDelete.role === UserRole.ADMIN) {
       throw new ConflictException('Admin cannot be deleted');
     }
 
     return this.prisma.user.delete({
-      where: { id: parseInt(id) },
+      where: { id: parseInt(id, 10) },
     });
   }
 }

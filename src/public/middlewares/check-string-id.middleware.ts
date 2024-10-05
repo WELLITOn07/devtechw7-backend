@@ -1,15 +1,19 @@
+import {
+  Injectable,
+  NestMiddleware,
+  BadRequestException,
+} from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
-import { NestMiddleware } from '@nestjs/common';
 
+@Injectable()
 export class CheckStringIdMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
-    if (req.params.id == 'null' || req.params.id == 'undefined') {
-      return res.status(400).json({
-        statusCode: 400,
-        message: 'Id is not valid string value',
-        error: 'Bad Request',
-      });
+    const id = req.params.id;
+
+    if (id === 'null' || id === 'undefined') {
+      throw new BadRequestException('Id is not a valid string value');
     }
+
     next();
   }
 }

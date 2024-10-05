@@ -1,15 +1,19 @@
-import { NestMiddleware } from '@nestjs/common';
+import {
+  Injectable,
+  NestMiddleware,
+  BadRequestException,
+} from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 
+@Injectable()
 export class CheckNumberIdMiddleware implements NestMiddleware {
-  use(req: Request, res: Response, next: (error?: NextFunction) => void) {
-    if (isNaN(Number(req.params.id)) || Number(req.params.id) < 1) {
-      return res.status(400).json({
-        statusCode: 400,
-        message: 'Id is not valid number value',
-        error: 'Bad Request',
-      });
+  use(req: Request, res: Response, next: NextFunction) {
+    const id = Number(req.params.id);
+
+    if (isNaN(id) || id < 1) {
+      throw new BadRequestException('Id is not a valid number value');
     }
+
     next();
   }
 }

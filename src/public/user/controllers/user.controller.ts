@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Put, Delete, Param, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Body,
+} from '@nestjs/common';
 import { UserService } from '../services/user.service';
 import { User, Prisma } from '@prisma/client';
 
@@ -10,6 +18,7 @@ export class UserController {
   async healthCheck(): Promise<any> {
     return {
       status: 'ok',
+      message: 'Service is up and running',
     };
   }
 
@@ -29,13 +38,19 @@ export class UserController {
   }
 
   @Put(':id')
-  async updateUser(@Param('id') id: string, @Body() data: Prisma.UserUpdateInput): Promise<User> {
-    return this.userService.updateUser(id, data);
+  async updateUser(
+    @Param('id') id: string,
+    @Body() data: Prisma.UserUpdateInput,
+    @Body('adminId') adminId: string,
+  ): Promise<User> {
+    return this.userService.updateUser(adminId, id, data);
   }
 
   @Delete(':id')
-  async deleteUser(@Param('id') id: string): Promise<User> {
-    return this.userService.deleteUser(id);
+  async deleteUser(
+    @Param('id') id: string,
+    @Body('adminId') adminId: string,
+  ): Promise<User> {
+    return this.userService.deleteUser(adminId, id);
   }
 }
-

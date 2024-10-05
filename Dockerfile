@@ -35,8 +35,8 @@ EXPOSE 3000 9229
 # Define a variável de ambiente padrão como "production"
 ENV NODE_ENV production
 
-# Comando de execução que verifica o ambiente e usa o script adequado
+# Comando de execução que verifica o ambiente, roda testes (em prod), e usa o script adequado
 CMD if [ "$NODE_ENV" = "production" ]; \
-  then npm run prod; \
+  then npm run test && npm run prod; \
   else npm run start:debug; \
   fi
