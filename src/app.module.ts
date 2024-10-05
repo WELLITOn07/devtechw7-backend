@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { BiomedsandraApiModule } from './biomedsandra-api/biomedsandra-api.module';
-import { PrismaService } from './database/prisma.service';
+import { UserModule } from './public/user/user.module';
 
 @Module({
   imports: [
@@ -22,13 +22,13 @@ import { PrismaService } from './database/prisma.service';
       },
     ]),
     BiomedsandraApiModule,
+    UserModule,
   ],
   providers: [
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
-    PrismaService,
   ],
 })
 export class AppModule {}

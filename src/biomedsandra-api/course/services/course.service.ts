@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Course, Prisma } from '@prisma/client';
-import { PrismaService } from 'src/database/prisma.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class CourseService {
@@ -44,7 +44,12 @@ export class CourseService {
   ): Promise<Course> {
     return this.prisma.course.update({
       where: { id },
-      data,
+      data: {
+        ...data,
+        price: data.price,
+        subjects: data.subjects,
+        works: data.works,
+      },
       include: {
         price: true,
         subjects: true,
@@ -54,6 +59,14 @@ export class CourseService {
   }
 
   async deleteCourse(id: string): Promise<Course> {
+    await this.prisma.subject.deleteMany({
+      where: { courseId: id },
+    });
+
+    await this.prisma.work.deleteMany({
+      where: { courseId: id },
+    });
+
     return this.prisma.course.delete({
       where: { id },
       include: {

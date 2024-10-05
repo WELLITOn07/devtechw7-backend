@@ -15,7 +15,7 @@ RUN npm run build
 RUN npx prisma migrate deploy --schema=/app/prisma/schema.prisma
 RUN npx prisma generate --schema=/app/prisma/schema.prisma
 
-# Etapa 2: Produção
+# Etapa 2: Produção ou Desenvolvimento com Debug
 FROM node:18-alpine AS production
 
 WORKDIR /app
@@ -29,14 +29,14 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
 
+# Expor as portas 3000 (app) e 9229 (debug)
+EXPOSE 3000 9229
+
 # Define a variável de ambiente padrão como "production"
 ENV NODE_ENV production
 
-# Exponha a porta 3000
-EXPOSE 3000
-
-# Comando de execução que verifica o ambiente e usa o script adequado
+# Comando de execução que verifica o ambiente, roda testes (em prod), e usa o script adequado
 CMD if [ "$NODE_ENV" = "production" ]; \
-  then npm run prod; \
-  else npm run dev; \
+  then npm run test && npm run prod; \
+  else npm run start:debug; \
   fi
