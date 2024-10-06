@@ -38,5 +38,5 @@ ENV NODE_ENV production
 # Comando de execução que verifica o ambiente, roda testes (em prod), e usa o script adequado
 CMD if [ "$NODE_ENV" = "production" ]; \
   then npm run test && npm run prod; \
-  else npm run start:debug; \
+  else npm run dev; \
   fi

@@ -19,7 +19,7 @@ services:
       sh -c "sleep 10 &&
              npx prisma migrate deploy --schema /app/prisma/schema.prisma &&
              npx prisma generate --schema /app/prisma/schema.prisma &&
-             npm run start:debug" # No desenvolvimento, usamos o debug
+             npm run dev" # No desenvolvimento, usamos o debug
 
   db:
     image: postgres:13
