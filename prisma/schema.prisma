@@ -12,13 +12,14 @@ model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   name      String
-  createdAt DateTime @default(now()) 
-  role      String @default("COMMON")
+  password  String 
+  birthAt   DateTime 
+  createdAt DateTime @default(now())
+  role      String   @default("COMMON")
   apps      String[] 
 
   @@schema("public") 
 }
-
 model Course {
   id          String   @id @default(uuid())
   title       String
