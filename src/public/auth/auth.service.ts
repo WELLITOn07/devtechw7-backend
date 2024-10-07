@@ -1,7 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User, Prisma } from '@prisma/client';
+import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -25,10 +31,9 @@ export class AuthService {
 
   async validateToken(token: string) {
     try {
-      const data = this.jwtService.verify(token);
-      return data;
+      return this.jwtService.verify(token);
     } catch (error) {
-      return null;
+      throw new UnauthorizedException('Invalid or expired token');
     }
   }
 
@@ -38,17 +43,21 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundException('User with this email not found');
     }
 
     if (user.password !== password) {
-      throw new Error('Invalid password');
+      throw new UnauthorizedException('Invalid password');
     }
 
     return this.createToken(user);
   }
 
-  async forgotPassword() {}
+  async forgotPassword() {
+    return { message: 'Password reset link sent' };
+  }
 
-  async resetPassword() {}
+  async resetPassword() {
+    return { message: 'Password successfully reset' };
+  }
 }

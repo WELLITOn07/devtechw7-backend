@@ -1,8 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { User, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserRole } from '../models/user-rule.enum';
@@ -11,13 +7,13 @@ import { UserRole } from '../models/user-rule.enum';
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createUser(data: Prisma.UserCreateInput): Promise<User> {
+  async createUser(data: Prisma.UserCreateInput): Promise<User | null> {
     const userWithSameEmail = await this.prisma.user.findUnique({
       where: { email: data.email },
     });
 
     if (userWithSameEmail) {
-      throw new ConflictException('Email already exists');
+      return null;
     }
 
     return this.prisma.user.create({
@@ -32,25 +28,22 @@ export class UserService {
     return this.prisma.user.findMany();
   }
 
-  async getUserById(id: number): Promise<User> {
-    const user = await this.prisma.user.findUnique({
+  async getUserById(id: number): Promise<User | null> {
+    return this.prisma.user.findUnique({
       where: {
         id: id,
       },
     });
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    return user;
   }
 
-  async updateUser(id: number, data: Prisma.UserUpdateInput): Promise<User> {
+  async updateUser(
+    id: number,
+    data: Prisma.UserUpdateInput,
+  ): Promise<User | null> {
     const userToUpdate = await this.getUserById(id);
 
     if (!userToUpdate) {
-      throw new NotFoundException('User not found');
+      return null; 
     }
 
     return this.prisma.user.update({
@@ -59,11 +52,11 @@ export class UserService {
     });
   }
 
-  async deleteUser(id: number): Promise<User> {
+  async deleteUser(id: number): Promise<User | null> {
     const userToDelete = await this.getUserById(id);
 
     if (!userToDelete) {
-      throw new NotFoundException('User not found');
+      return null;
     }
 
     return this.prisma.user.delete({

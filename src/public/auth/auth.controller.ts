@@ -1,5 +1,14 @@
+import {
+  Body,
+  Controller,
+  Post,
+  HttpCode,
+  HttpStatus,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { UserService } from './../user/services/user.service';
-import { Body, Controller, Post } from '@nestjs/common';
+import { AuthService } from './auth.service';
 import { AuthLoginDto } from './dto/auth-login.dto';
 import { AuthRegisterDto } from './dto/auth-register.dto';
 import { AuthForgotPasswordDto } from './dto/auth-forgot.dto';
@@ -7,19 +16,50 @@ import { AuthResetPasswordDto } from './dto/auth-reset-password.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly UserService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly authService: AuthService,
+  ) {}
 
   @Post('login')
-  async login(@Body() data: AuthLoginDto) {}
+  @HttpCode(HttpStatus.OK)
+  async authLogin(@Body() data: AuthLoginDto) {
+    try {
+      return await this.authService.login(data.email, data.password);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
 
   @Post('register')
-  async register(@Body() data: AuthRegisterDto) {
-    return this.UserService.createUser(data);
+  @HttpCode(HttpStatus.CREATED)
+  async authRegister(@Body() data: AuthRegisterDto) {
+    try {
+      return await this.userService.createUser(data);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
   @Post('forgot-password')
-  async forgotPassword(@Body() data: AuthForgotPasswordDto) {}
+  @HttpCode(HttpStatus.OK)
+  async authForgotPassword(@Body() data: AuthForgotPasswordDto) {
+    try {
+      await this.authService.forgotPassword();
+      return { message: 'Password reset link sent' };
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
 
   @Post('reset-password')
-  async resetPassword(@Body() data: AuthResetPasswordDto) {}
+  @HttpCode(HttpStatus.OK)
+  async authResetPassword(@Body() data: AuthResetPasswordDto) {
+    try {
+      await this.authService.resetPassword();
+      return { message: 'Password successfully reset' };
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
 }

@@ -17,8 +17,8 @@ services:
       - db
     command: >
       sh -c "sleep 10 &&
-             npx prisma generate --schema /app/prisma/schema.prisma &&
-             npm run dev:debug" # No desenvolvimento, usamos o debug
+             if [ "$$NODE_ENV" = "development" ]; then npx prisma generate --schema /app/prisma/schema.prisma; fi &&
+             npm run dev:debug"
 
   db:
     image: postgres:13
