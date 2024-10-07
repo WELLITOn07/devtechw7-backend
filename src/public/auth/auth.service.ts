@@ -25,6 +25,7 @@ export class AuthService {
     };
 
     return {
+      ...payload,
       access_token: this.jwtService.sign(payload),
     };
   }
@@ -38,26 +39,45 @@ export class AuthService {
   }
 
   async login(email: string, password: string) {
-    const user = await this.prismaService.user.findFirst({
-      where: { email },
+    const user = await this.prismaService.user.findUnique({
+      where: { email, password },
     });
 
     if (!user) {
-      throw new NotFoundException('User with this email not found');
-    }
-
-    if (user.password !== password) {
-      throw new UnauthorizedException('Invalid password');
+      throw new UnauthorizedException('Email or password incorrect');
     }
 
     return this.createToken(user);
   }
 
-  async forgotPassword() {
-    return { message: 'Password reset link sent' };
+  async forgotPassword(email: string) {
+    const user = await this.prismaService.user.findUnique({
+      where: { email: email },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return true;
   }
 
-  async resetPassword() {
-    return { message: 'Password successfully reset' };
+  async resetPassword(email: string, newPassword: string) {
+    if (newPassword.length < 6) {
+      throw new BadRequestException('Password must be at least 6 characters');
+    }
+
+    const userToUpdate = await this.prismaService.user.findUnique({
+      where: { email },
+    });
+
+    if (!userToUpdate) {
+      throw new NotFoundException('User not found');
+    }
+
+    return await this.prismaService.user.update({
+      where: { email },
+      data: { password: newPassword },
+    });
   }
 }

@@ -45,7 +45,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async authForgotPassword(@Body() data: AuthForgotPasswordDto) {
     try {
-      await this.authService.forgotPassword();
+      await this.authService.forgotPassword(data.email);
       return { message: 'Password reset link sent' };
     } catch (error) {
       throw new BadRequestException(error.message);
@@ -54,9 +54,11 @@ export class AuthController {
 
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
+
   async authResetPassword(@Body() data: AuthResetPasswordDto) {
+    const tokenData = await this.authService.validateToken(data.token);
     try {
-      await this.authService.resetPassword();
+      await this.authService.resetPassword(tokenData.email, data.password);
       return { message: 'Password successfully reset' };
     } catch (error) {
       throw new BadRequestException(error.message);

@@ -43,7 +43,7 @@ export class UserService {
     const userToUpdate = await this.getUserById(id);
 
     if (!userToUpdate) {
-      return null; 
+      return null;
     }
 
     return this.prisma.user.update({

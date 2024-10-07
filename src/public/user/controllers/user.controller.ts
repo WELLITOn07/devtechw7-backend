@@ -73,15 +73,18 @@ export class UserController {
   }
 
   @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteUser(@ParamNumberId() id: number): Promise<void> {
+  @HttpCode(HttpStatus.OK) // Mudança para permitir retornar uma mensagem de sucesso
+  async deleteUser(@ParamNumberId() id: number): Promise<{ message: string }> {
     try {
       const deletedUser = await this.userService.deleteUser(id);
+
       if (!deletedUser) {
         throw new NotFoundException(
           `User with ID ${id} not found for deletion`,
         );
       }
+
+      return { message: `User with ID ${id} was successfully deleted` };
     } catch (error) {
       throw new NotFoundException(
         `Failed to delete user with ID ${id}: ${error.message}`,
