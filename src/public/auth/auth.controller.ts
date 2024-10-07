@@ -21,7 +21,8 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async login(@Body() data: AuthLoginDto): Promise<{ access_token: string }> {
     try {
-      return await this.authService.login(data.email, data.password);
+      const token = await this.authService.login(data.email, data.password);
+      return { access_token: token.access_token };
     } catch (error) {
       throw new BadRequestException(error.message);
     }
@@ -29,17 +30,12 @@ export class AuthController {
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  async register(@Body() data: User): Promise<{ message: string }> {
+  async register(
+    @Body() data: User,
+  ): Promise<{ message: string; access_token: string }> {
     try {
       const userToken = await this.authService.registerUser(data);
-      if (!userToken) {
-        throw new ConflictException(
-          `A user with the email ${data.email} already exists`,
-        );
-      }
-      return {
-        message: `User created successfully`,
-      };
+      return userToken;
     } catch (error) {
       throw new ConflictException(error.message);
     }
@@ -51,8 +47,7 @@ export class AuthController {
     @Body() data: AuthForgotPasswordDto,
   ): Promise<{ message: string }> {
     try {
-      await this.authService.forgotPassword(data.email);
-      return { message: 'Password reset link sent' };
+      return await this.authService.forgotPassword(data.email);
     } catch (error) {
       throw new BadRequestException(error.message);
     }
@@ -62,11 +57,13 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async resetPassword(
     @Body() data: AuthResetPasswordDto,
-  ): Promise<{ message: string }> {
-    const tokenData = await this.authService.validateToken(data.token);
+  ): Promise<{ message: string; access_token: string }> {
     try {
-      await this.authService.resetPassword(tokenData.email, data.password);
-      return { message: 'Password successfully reset' };
+      const tokenData = await this.authService.validateToken(data.token);
+      return await this.authService.resetPassword(
+        tokenData.email,
+        data.password,
+      );
     } catch (error) {
       throw new BadRequestException(error.message);
     }

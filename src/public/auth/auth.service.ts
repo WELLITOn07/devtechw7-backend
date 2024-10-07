@@ -3,9 +3,10 @@ import {
   UnauthorizedException,
   NotFoundException,
   BadRequestException,
+  ConflictException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User, Prisma } from '@prisma/client';
+import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserRole } from '../user/models/user-rule.enum';
 
@@ -26,10 +27,8 @@ export class AuthService {
     };
 
     return {
-      access_token: this.jwtService.sign(
-        {
-          ...payload,
-        },
+      access_token: await this.jwtService.sign(
+        { ...payload },
         {
           expiresIn: '7d',
           issuer: 'devtechw7-backend',
@@ -41,7 +40,7 @@ export class AuthService {
 
   async validateToken(token: string): Promise<{ [key: string]: any }> {
     try {
-      return this.jwtService.verify(token);
+      return await this.jwtService.verify(token);
     } catch (error) {
       throw new UnauthorizedException('Invalid or expired token');
     }
@@ -50,8 +49,8 @@ export class AuthService {
   async login(
     email: string,
     password: string,
-  ): Promise<{ access_token: string }> {
-    const user = await this.prismaService.user.findUnique({
+  ): Promise<{ access_token: string; user: User }> {
+    const user = await this.prismaService.user.findFirst({
       where: { email, password },
     });
 
@@ -59,49 +58,53 @@ export class AuthService {
       throw new UnauthorizedException('Email or password incorrect');
     }
 
-    return this.createToken(user);
+    const token = await this.createToken(user);
+    return { access_token: token.access_token, user };
   }
 
-  async registerUser(data: User): Promise<{ access_token: string }> {
-    const userWithSameEmail = await this.prismaService.user.findUnique({
+  async registerUser(
+    data: User,
+  ): Promise<{ message: string; access_token: string }> {
+    const userWithSameEmail = await this.prismaService.user.findFirst({
       where: { email: data.email },
     });
 
     if (userWithSameEmail) {
-      return null;
+      throw new ConflictException(
+        `User with email ${data.email} already exists`,
+      );
     }
 
-    this.prismaService.user.create({
-      data: {
-        ...data,
-        role: data.role ?? UserRole.COMMON,
-      },
+    const userCreated = await this.prismaService.user.create({
+      data: { ...data, role: data.role ?? UserRole.COMMON },
     });
 
-    return this.createToken(data);
+    const token = await this.createToken(userCreated);
+    return {
+      message: 'User created successfully',
+      access_token: token.access_token,
+    };
   }
 
-  async forgotPassword(email: string): Promise<boolean> {
-    const user = await this.prismaService.user.findUnique({
-      where: { email: email },
-    });
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    const user = await this.prismaService.user.findFirst({ where: { email } });
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    return true;
+    return { message: 'Password reset link sent' };
   }
 
   async resetPassword(
     email: string,
     newPassword: string,
-  ): Promise<{ access_token: string }> {
+  ): Promise<{ message: string; access_token: string }> {
     if (newPassword.length < 6) {
       throw new BadRequestException('Password must be at least 6 characters');
     }
 
-    const userToUpdate = await this.prismaService.user.findUnique({
+    const userToUpdate = await this.prismaService.user.findFirst({
       where: { email },
     });
 
@@ -114,6 +117,10 @@ export class AuthService {
       data: { password: newPassword },
     });
 
-    return this.createToken(userToUpdate);
+    const token = await this.createToken(userToUpdate);
+    return {
+      message: 'Password successfully reset',
+      access_token: token.access_token,
+    };
   }
 }
