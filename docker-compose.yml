@@ -12,14 +12,13 @@ services:
       - "9229:9229"
     volumes:
       - .:/app
-      - /app/node_modules
+      #- /app/node_modules
     depends_on:
       - db
     command: >
       sh -c "sleep 10 &&
-             npx prisma migrate deploy --schema /app/prisma/schema.prisma &&
-             npx prisma generate --schema /app/prisma/schema.prisma &&
-             npm run start:debug" # No desenvolvimento, usamos o debug
+             if [ "$$NODE_ENV" = "development" ]; then npx prisma generate --schema /app/prisma/schema.prisma; fi &&
+             npm run dev:debug"
 
   db:
     image: postgres:13

@@ -4,6 +4,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { BiomedsandraApiModule } from './biomedsandra-api/biomedsandra-api.module';
 import { UserModule } from './public/user/user.module';
+import { AuthModule } from './public/auth/auth.module';
 
 @Module({
   imports: [
@@ -21,8 +22,9 @@ import { UserModule } from './public/user/user.module';
         ignoreUserAgents: [/Googlebot/],
       },
     ]),
-    BiomedsandraApiModule,
+    AuthModule,
     UserModule,
+    BiomedsandraApiModule,
   ],
   providers: [
     {

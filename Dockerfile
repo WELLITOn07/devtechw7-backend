@@ -12,7 +12,6 @@ COPY . .
 RUN npm run build
 
 # Gera o Prisma Client e executa as migrações após o build
-RUN npx prisma migrate deploy --schema=/app/prisma/schema.prisma
 RUN npx prisma generate --schema=/app/prisma/schema.prisma
 
 # Etapa 2: Produção ou Desenvolvimento com Debug
@@ -38,5 +37,5 @@ ENV NODE_ENV production
 # Comando de execução que verifica o ambiente, roda testes (em prod), e usa o script adequado
 CMD if [ "$NODE_ENV" = "production" ]; \
   then npm run test && npm run prod; \
-  else npm run start:debug; \
+  else npm dev:debug; \
   fi
