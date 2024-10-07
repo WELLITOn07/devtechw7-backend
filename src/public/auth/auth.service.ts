@@ -5,8 +5,9 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
+import { User, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { UserRole } from '../user/models/user-rule.enum';
 
 @Injectable()
 export class AuthService {
@@ -15,22 +16,30 @@ export class AuthService {
     private readonly prismaService: PrismaService,
   ) {}
 
-  async createToken(user: User) {
+  async createToken(user: User): Promise<{ access_token: string }> {
     const payload = {
+      sub: user.id,
       username: user.name,
       email: user.email,
-      sub: user.id,
       role: user.role,
       apps: user.apps,
     };
 
     return {
-      ...payload,
-      access_token: this.jwtService.sign(payload),
+      access_token: this.jwtService.sign(
+        {
+          ...payload,
+        },
+        {
+          expiresIn: '7d',
+          issuer: 'devtechw7-backend',
+          audience: 'users',
+        },
+      ),
     };
   }
 
-  async validateToken(token: string) {
+  async validateToken(token: string): Promise<{ [key: string]: any }> {
     try {
       return this.jwtService.verify(token);
     } catch (error) {
@@ -38,7 +47,10 @@ export class AuthService {
     }
   }
 
-  async login(email: string, password: string) {
+  async login(
+    email: string,
+    password: string,
+  ): Promise<{ access_token: string }> {
     const user = await this.prismaService.user.findUnique({
       where: { email, password },
     });
@@ -50,7 +62,26 @@ export class AuthService {
     return this.createToken(user);
   }
 
-  async forgotPassword(email: string) {
+  async registerUser(data: User): Promise<{ access_token: string }> {
+    const userWithSameEmail = await this.prismaService.user.findUnique({
+      where: { email: data.email },
+    });
+
+    if (userWithSameEmail) {
+      return null;
+    }
+
+    this.prismaService.user.create({
+      data: {
+        ...data,
+        role: data.role ?? UserRole.COMMON,
+      },
+    });
+
+    return this.createToken(data);
+  }
+
+  async forgotPassword(email: string): Promise<boolean> {
     const user = await this.prismaService.user.findUnique({
       where: { email: email },
     });
@@ -62,7 +93,10 @@ export class AuthService {
     return true;
   }
 
-  async resetPassword(email: string, newPassword: string) {
+  async resetPassword(
+    email: string,
+    newPassword: string,
+  ): Promise<{ access_token: string }> {
     if (newPassword.length < 6) {
       throw new BadRequestException('Password must be at least 6 characters');
     }
@@ -75,9 +109,11 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
-    return await this.prismaService.user.update({
+    await this.prismaService.user.update({
       where: { email },
       data: { password: newPassword },
     });
+
+    return this.createToken(userToUpdate);
   }
 }
