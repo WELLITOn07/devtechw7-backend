@@ -5,27 +5,24 @@ import {
   HttpCode,
   HttpStatus,
   BadRequestException,
-  NotFoundException,
+  ConflictException,
 } from '@nestjs/common';
-import { UserService } from './../user/services/user.service';
 import { AuthService } from './auth.service';
 import { AuthLoginDto } from './dto/auth-login.dto';
-import { AuthRegisterDto } from './dto/auth-register.dto';
 import { AuthForgotPasswordDto } from './dto/auth-forgot.dto';
 import { AuthResetPasswordDto } from './dto/auth-reset-password.dto';
+import { User } from '@prisma/client';
 
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private readonly userService: UserService,
-    private readonly authService: AuthService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async authLogin(@Body() data: AuthLoginDto) {
+  async login(@Body() data: AuthLoginDto): Promise<{ access_token: string }> {
     try {
-      return await this.authService.login(data.email, data.password);
+      const token = await this.authService.login(data.email, data.password);
+      return { access_token: token.access_token };
     } catch (error) {
       throw new BadRequestException(error.message);
     }
@@ -33,20 +30,24 @@ export class AuthController {
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  async authRegister(@Body() data: AuthRegisterDto) {
+  async register(
+    @Body() data: User,
+  ): Promise<{ message: string; access_token: string }> {
     try {
-      return await this.userService.createUser(data);
+      const userToken = await this.authService.registerUser(data);
+      return userToken;
     } catch (error) {
-      throw new BadRequestException(error.message);
+      throw new ConflictException(error.message);
     }
   }
 
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
-  async authForgotPassword(@Body() data: AuthForgotPasswordDto) {
+  async forgotPassword(
+    @Body() data: AuthForgotPasswordDto,
+  ): Promise<{ message: string }> {
     try {
-      await this.authService.forgotPassword();
-      return { message: 'Password reset link sent' };
+      return await this.authService.forgotPassword(data.email);
     } catch (error) {
       throw new BadRequestException(error.message);
     }
@@ -54,10 +55,15 @@ export class AuthController {
 
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
-  async authResetPassword(@Body() data: AuthResetPasswordDto) {
+  async resetPassword(
+    @Body() data: AuthResetPasswordDto,
+  ): Promise<{ message: string; access_token: string }> {
     try {
-      await this.authService.resetPassword();
-      return { message: 'Password successfully reset' };
+      const tokenData = await this.authService.validateToken(data.token);
+      return await this.authService.resetPassword(
+        tokenData.email,
+        data.password,
+      );
     } catch (error) {
       throw new BadRequestException(error.message);
     }

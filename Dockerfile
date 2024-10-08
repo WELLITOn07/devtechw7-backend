@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Copia os arquivos package.json e instala TODAS as dependências
 COPY package*.json ./
-RUN npm install
+RUN npm install --quiet --no-optional --no-fund --loglevel=error
 
 # Copia o código-fonte e executa o build
 COPY . .
