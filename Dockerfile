@@ -3,39 +3,41 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Copia os arquivos package.json e instala TODAS as dependências
+# Copia o package.json e instala TODAS as dependências
 COPY package*.json ./
 RUN npm install --quiet --no-optional --no-fund --loglevel=error
 
-# Copia o código-fonte e executa o build
+# Copia o código-fonte após instalar dependências
 COPY . .
-RUN npm run build
 
-# Gera o Prisma Client e executa as migrações após o build
+# Gera o Prisma Client ANTES do build
 RUN npx prisma generate --schema=/app/prisma/schema.prisma
 
-# Etapa 2: Produção ou Desenvolvimento com Debug
+# Executa o build da aplicação
+RUN npm run build
+
+# Etapa 2: Produção
 FROM node:18-alpine AS production
 
 WORKDIR /app
 
-# Copia o package.json e as dependências de produção
+# Copia o package.json e instala as dependências de produção
 COPY package*.json ./
 RUN npm install --only=production
 
-# Copia o build da etapa anterior
+# Copia o build e o Prisma Client da etapa anterior
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
 
-# Expor as portas 3000 (app) e 9229 (debug)
-EXPOSE 3000 9229
+# Copia o arquivo de variáveis de ambiente de produção
+COPY .env.production .env
+
+# Expor a porta 3000
+EXPOSE 3000
 
 # Define a variável de ambiente padrão como "production"
 ENV NODE_ENV production
 
-# Comando de execução que verifica o ambiente, roda testes (em prod), e usa o script adequado
-CMD if [ "$NODE_ENV" = "production" ]; \
-  then npm run test && npm run prod; \
-  else npm dev:debug; \
-  fi
+# Comando de execução
+CMD ["npm", "run", "prod"]

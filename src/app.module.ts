@@ -5,6 +5,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { BiomedsandraApiModule } from './biomedsandra-api/biomedsandra-api.module';
 import { UserModule } from './public/user/user.module';
 import { AuthModule } from './public/auth/auth.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AuthModule } from './public/auth/auth.module';
     UserModule,
     BiomedsandraApiModule,
   ],
+  controllers: [AppController],
   providers: [
     {
       provide: APP_GUARD,
