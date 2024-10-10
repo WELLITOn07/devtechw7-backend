@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for devtechw7-backend on 2024-10-09T19:13:17-03:00
+# fly.toml app configuration file generated for devtechw7-backend-small-violet-5481 on 2024-10-09T21:58:31-03:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'devtechw7-backend'
+app = 'devtechw7-backend-small-violet-5481'
 primary_region = 'gru'
 
 [build]
