@@ -20,3 +20,20 @@ primary_region = 'gru'
   memory = '1gb'
   cpu_kind = 'shared'
   cpus = 1
+
+[[services]]
+  internal_port = 5432
+  protocol = "tcp"
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 25
+    soft_limit = 20
+
+  [[services.ports]]
+    port = 5432
+    handlers = ["pg"]
+
+  [[mounts]]
+    source = "postgres_data"   
+    destination = "/var/lib/postgresql/data"
+
