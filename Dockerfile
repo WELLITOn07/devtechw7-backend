@@ -30,6 +30,9 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
 
+# Copia o arquivo de variáveis de ambiente de produção
+COPY .env.production .env
+
 # Expor a porta 3000
 EXPOSE 3000
 
