@@ -1,17 +1,21 @@
 import {
   Body,
+  Headers,
   Controller,
   Post,
   HttpCode,
   HttpStatus,
   BadRequestException,
   ConflictException,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthLoginDto } from './dto/auth-login.dto';
 import { AuthForgotPasswordDto } from './dto/auth-forgot.dto';
 import { AuthResetPasswordDto } from './dto/auth-reset-password.dto';
 import { User } from '@prisma/client';
+import { AuthGuard } from './guards/auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -59,7 +63,7 @@ export class AuthController {
     @Body() data: AuthResetPasswordDto,
   ): Promise<{ message: string; access_token: string }> {
     try {
-      const tokenData = await this.authService.validateToken(data.token);
+      const tokenData = this.authService.validateToken(data.token);
       return await this.authService.resetPassword(
         tokenData.email,
         data.password,
@@ -67,5 +71,14 @@ export class AuthController {
     } catch (error) {
       throw new BadRequestException(error.message);
     }
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('me')
+  async me(@Req() req: any) {
+    return {
+      message: 'authenticated',
+      user: req.user,
+    };
   }
 }

@@ -4,6 +4,8 @@ import {
   NotFoundException,
   BadRequestException,
   ConflictException,
+  Post,
+  Body,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
@@ -17,7 +19,7 @@ export class AuthService {
     private readonly prismaService: PrismaService,
   ) {}
 
-  async createToken(user: User): Promise<{ access_token: string }> {
+  createToken(user: User): { access_token: string } {
     const payload = {
       sub: user.id,
       username: user.name,
@@ -27,7 +29,7 @@ export class AuthService {
     };
 
     return {
-      access_token: await this.jwtService.sign(
+      access_token: this.jwtService.sign(
         { ...payload },
         {
           expiresIn: '7d',
@@ -38,11 +40,20 @@ export class AuthService {
     };
   }
 
-  async validateToken(token: string): Promise<{ [key: string]: any }> {
+  validateToken(token: string) {
     try {
-      return await this.jwtService.verify(token);
+      return this.jwtService.verify(token);
     } catch (error) {
       throw new UnauthorizedException('Invalid or expired token');
+    }
+  }
+
+  isValidToken(token: string): boolean {
+    try {
+      this.jwtService.verify(token);
+      return true;
+    } catch (error) {
+      return false;
     }
   }
 
