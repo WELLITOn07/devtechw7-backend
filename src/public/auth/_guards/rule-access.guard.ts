@@ -19,6 +19,6 @@ export class RuleAccessGuard implements CanActivate {
     if (!rule) {
       return true;
     }
-    return request.user.role === rule;
+    return request.user.rule === rule[0];
   }
 }
