@@ -1,6 +1,5 @@
 import {
   Body,
-  Headers,
   Controller,
   Post,
   HttpCode,
@@ -11,11 +10,12 @@ import {
   Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthLoginDto } from './dto/auth-login.dto';
-import { AuthForgotPasswordDto } from './dto/auth-forgot.dto';
-import { AuthResetPasswordDto } from './dto/auth-reset-password.dto';
+import { AuthLoginDto } from './_dto/auth-login.dto';
+import { AuthForgotPasswordDto } from './_dto/auth-forgot.dto';
+import { AuthResetPasswordDto } from './_dto/auth-reset-password.dto';
+import { AuthGuard } from './_guards/auth.guard';
+import { userDecorator } from '../_decorators/user.decorator';
 import { User } from '@prisma/client';
-import { AuthGuard } from './guards/auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -75,10 +75,10 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @Post('me')
-  async me(@Req() req: any) {
+  async me(@userDecorator() user: User) {
     return {
       message: 'authenticated',
-      user: req.user,
+      user: user,
     };
   }
 }

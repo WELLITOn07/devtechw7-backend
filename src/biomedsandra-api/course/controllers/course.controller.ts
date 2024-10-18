@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { Course, Prisma } from '@prisma/client';
 import { CourseService } from '../services/course.service';
-import { ParamStringId } from 'src/public/decorators/param-string-id.decorator';
+import { ParamStringId } from 'src/public/_decorators/param-string-id.decorator';
 
 @Controller('courses')
 export class CourseController {

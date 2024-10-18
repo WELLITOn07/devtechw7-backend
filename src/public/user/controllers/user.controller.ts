@@ -1,23 +1,24 @@
 import {
   Controller,
   Get,
-  Post,
   Put,
   Delete,
   Body,
   HttpCode,
   HttpStatus,
-  ConflictException,
   NotFoundException,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from 'src/public/auth/_guards/auth.guard';
 import { UserService } from '../services/user.service';
 import { User, Prisma } from '@prisma/client';
-import { ParamNumberId } from 'src/public/decorators/param-number-id.decorator';
+import { ParamNumberId } from 'src/public/_decorators/param-number-id.decorator';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @UseGuards(AuthGuard)
   @Get()
   @HttpCode(HttpStatus.OK)
   async getUsers(): Promise<{
@@ -33,6 +34,7 @@ export class UserController {
     };
   }
 
+  @UseGuards(AuthGuard)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   async getUserById(
@@ -53,6 +55,7 @@ export class UserController {
     }
   }
 
+  @UseGuards(AuthGuard)
   @Put(':id')
   @HttpCode(HttpStatus.OK)
   async updateUser(
@@ -76,6 +79,7 @@ export class UserController {
     }
   }
 
+  @UseGuards(AuthGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   async deleteUser(

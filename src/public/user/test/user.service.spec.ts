@@ -1,8 +1,3 @@
-import {
-  ForbiddenException,
-  NotFoundException,
-} from '@nestjs/common';
-import { UserRole } from '../models/user-rule.enum';
 import { UserService } from '../services/user.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 

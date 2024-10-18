@@ -4,13 +4,11 @@ import {
   NotFoundException,
   BadRequestException,
   ConflictException,
-  Post,
-  Body,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UserRole } from '../user/models/user-rule.enum';
+import { RuleAcess } from '../_enums/rule-acess.enum';
 
 @Injectable()
 export class AuthService {
@@ -87,7 +85,7 @@ export class AuthService {
     }
 
     const userCreated = await this.prismaService.user.create({
-      data: { ...data, role: data.role ?? UserRole.COMMON },
+      data: { ...data, role: data.role ?? RuleAcess.COMMON },
     });
 
     const token = await this.createToken(userCreated);
