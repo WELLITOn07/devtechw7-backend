@@ -13,12 +13,15 @@ import { AuthGuard } from 'src/public/auth/_guards/auth.guard';
 import { UserService } from '../services/user.service';
 import { User, Prisma } from '@prisma/client';
 import { ParamNumberId } from 'src/public/_decorators/param-number-id.decorator';
+import { RuleAccess } from 'src/public/_decorators/rule-access.decorator';
+import { RuleAccessEnum } from 'src/public/_enums/rule-access.enum';
+import { RuleAccessGuard } from 'src/public/auth/_guards/rule-access.guard';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
-  @UseGuards(AuthGuard)
+  @RuleAccess(RuleAccessEnum.ADMIN)
+  @UseGuards(AuthGuard, RuleAccessGuard)
   @Get()
   @HttpCode(HttpStatus.OK)
   async getUsers(): Promise<{
@@ -34,6 +37,7 @@ export class UserController {
     };
   }
 
+  @RuleAccess(RuleAccessEnum.ADMIN)
   @UseGuards(AuthGuard)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
@@ -55,6 +59,7 @@ export class UserController {
     }
   }
 
+  @RuleAccess(RuleAccessEnum.ADMIN)
   @UseGuards(AuthGuard)
   @Put(':id')
   @HttpCode(HttpStatus.OK)
@@ -79,6 +84,7 @@ export class UserController {
     }
   }
 
+  @RuleAccess(RuleAccessEnum.ADMIN)
   @UseGuards(AuthGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.OK)

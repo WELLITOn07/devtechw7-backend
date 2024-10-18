@@ -8,7 +8,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { RuleAcess } from '../_enums/rule-acess.enum';
+import { RuleAccessEnum } from '../_enums/rule-access.enum';
 
 @Injectable()
 export class AuthService {
@@ -22,7 +22,7 @@ export class AuthService {
       sub: user.id,
       username: user.name,
       email: user.email,
-      role: user.role,
+      rule: user.rule,
       apps: user.apps,
     };
 
@@ -85,7 +85,7 @@ export class AuthService {
     }
 
     const userCreated = await this.prismaService.user.create({
-      data: { ...data, role: data.role ?? RuleAcess.COMMON },
+      data: { ...data, rule: data.rule ?? RuleAccessEnum.COMMON },
     });
 
     const token = await this.createToken(userCreated);

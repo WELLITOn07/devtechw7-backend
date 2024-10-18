@@ -15,7 +15,7 @@ model User {
   password  String 
   birthAt   DateTime 
   createdAt DateTime @default(now())
-  role      String   @default("COMMON")
+  rule      String   @default("COMMON")
   apps      String[] 
 
   @@schema("public") 
