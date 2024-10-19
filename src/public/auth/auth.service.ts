@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RuleAccessEnum } from '../_enums/rule-access.enum';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -17,7 +18,7 @@ export class AuthService {
     private readonly prismaService: PrismaService,
   ) {}
 
-  createToken(user: User): { access_token: string } {
+  private createToken(user: User): { access_token: string } {
     const payload = {
       sub: user.id,
       username: user.name,
@@ -55,15 +56,31 @@ export class AuthService {
     }
   }
 
+  encryptPassword(password: string): string {
+    const salt = bcrypt.hashSync(password, 5);
+    return salt;
+  }
+
+  private decryptPassword(hash: string, password: string): boolean {
+    const valid = bcrypt.compareSync(password, hash);
+    return valid;
+  }
+
   async login(
     email: string,
     password: string,
   ): Promise<{ access_token: string; user: User }> {
     const user = await this.prismaService.user.findFirst({
-      where: { email, password },
+      where: { email },
     });
 
     if (!user) {
+      throw new UnauthorizedException('Email or password incorrect');
+    }
+
+    const isValid = this.decryptPassword(user.password, password);
+
+    if (!isValid) {
       throw new UnauthorizedException('Email or password incorrect');
     }
 
@@ -83,6 +100,8 @@ export class AuthService {
         `User with email ${data.email} already exists`,
       );
     }
+
+    data.password = this.encryptPassword(data.password);
 
     const userCreated = await this.prismaService.user.create({
       data: { ...data, rule: data.rule ?? RuleAccessEnum.COMMON },
@@ -121,9 +140,15 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
+    const isValid = this.decryptPassword(userToUpdate.password, newPassword);
+
+    if (isValid) {
+      throw new BadRequestException('New password must be different');
+    }
+
     await this.prismaService.user.update({
       where: { email },
-      data: { password: newPassword },
+      data: { password: this.encryptPassword(newPassword) },
     });
 
     const token = await this.createToken(userToUpdate);

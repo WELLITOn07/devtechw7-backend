@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { User, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { AuthService } from 'src/public/auth/auth.service';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private authService: AuthService,
+  ) {}
 
   async getUsers(): Promise<User[]> {
     return this.prisma.user.findMany();
@@ -26,6 +30,10 @@ export class UserService {
 
     if (!userToUpdate) {
       return null;
+    }
+
+    if (data.password) {
+      data.password = this.authService.encryptPassword(String(data.password));
     }
 
     return this.prisma.user.update({
