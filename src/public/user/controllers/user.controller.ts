@@ -38,7 +38,7 @@ export class UserController {
   }
 
   @RuleAccess(RuleAccessEnum.ADMIN)
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, RuleAccessGuard)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   async getUserById(
@@ -60,7 +60,7 @@ export class UserController {
   }
 
   @RuleAccess(RuleAccessEnum.ADMIN)
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, RuleAccessGuard)
   @Put(':id')
   @HttpCode(HttpStatus.OK)
   async updateUser(
@@ -85,7 +85,7 @@ export class UserController {
   }
 
   @RuleAccess(RuleAccessEnum.ADMIN)
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, RuleAccessGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   async deleteUser(

@@ -10,13 +10,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: [
-      'http://localhost',
-      'https://devtechw7-backend-small-violet-5481.fly.dev',
-    ],
+    origin: ['biomedsandra.com.br'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
+    preflightContinue: false
   });
 
   app.useGlobalPipes(new ValidationPipe());
