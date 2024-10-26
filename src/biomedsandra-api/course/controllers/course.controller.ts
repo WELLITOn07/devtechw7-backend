@@ -60,7 +60,7 @@ export class CourseController {
   @UseGuards(AuthGuard, RuleAccessGuard)
   @Post()
   async createCourse(
-    @Body() data: any, // Modificado para aceitar qualquer formato de dados
+    @Body() data: Prisma.CourseCreateInput,
   ): Promise<{ statusCode: number; message: string; data: Course }> {
     try {
       const course = await this.courseService.createCourse(data);
