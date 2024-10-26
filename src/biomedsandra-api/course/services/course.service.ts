@@ -1,14 +1,43 @@
 import { Injectable } from '@nestjs/common';
-import { Course, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma, Course } from '@prisma/client';
 
 @Injectable()
 export class CourseService {
   constructor(private prisma: PrismaService) {}
 
-  async createCourse(data: Prisma.CourseCreateInput): Promise<Course> {
+  async createCourse(data: any): Promise<Course> {
+    const formattedSubjects = data.subjects.map((subject: any) => ({
+      category: subject.category,
+      topics: { set: subject.topics },
+    }));
+
+    const formattedWorks = data.works.map((work: any) => ({
+      title: work.title,
+      url: work.url,
+    }));
+
     return this.prisma.course.create({
-      data,
+      data: {
+        id: data.id,
+        title: data.title,
+        description: data.description,
+        cover: data.cover,
+        link: data.link,
+        type: data.type,
+        price: {
+          create: {
+            original: data.price.original,
+            discounted: data.price.discounted,
+          },
+        },
+        subjects: {
+          create: formattedSubjects,
+        },
+        works: {
+          create: formattedWorks,
+        },
+      },
       include: {
         price: true,
         subjects: true,

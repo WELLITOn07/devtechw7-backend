@@ -20,6 +20,7 @@ import { RuleAccess } from 'src/public/_decorators/rule-access.decorator';
 @Controller('courses')
 export class CourseController {
   constructor(private readonly courseService: CourseService) {}
+
   @Get()
   async getCourses(): Promise<{
     statusCode: number;
@@ -59,7 +60,7 @@ export class CourseController {
   @UseGuards(AuthGuard, RuleAccessGuard)
   @Post()
   async createCourse(
-    @Body() data: Prisma.CourseCreateInput,
+    @Body() data: any, // Modificado para aceitar qualquer formato de dados
   ): Promise<{ statusCode: number; message: string; data: Course }> {
     try {
       const course = await this.courseService.createCourse(data);
