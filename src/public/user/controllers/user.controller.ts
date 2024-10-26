@@ -30,6 +30,11 @@ export class UserController {
     data: User[];
   }> {
     const users = await this.userService.getUsers();
+
+    if (!users) {
+      throw new NotFoundException(`Users not found`);
+    }
+    
     return {
       statusCode: HttpStatus.OK,
       message: 'Users retrieved successfully',
