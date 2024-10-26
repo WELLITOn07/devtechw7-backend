@@ -43,20 +43,27 @@ export class CourseController {
   }
 
   @Get(':id')
-  async getCourseById(@ParamStringId() id: string): Promise<Course | null> {
+  async getCourseById(@ParamStringId() id: string): Promise<{
+    statusCode: number;
+    message: string;
+    data: Course;
+  }> {
     try {
       const course = await this.courseService.getCourseById(id);
       if (!course) {
         throw new NotFoundException(`Course with ID ${id} not found`);
       }
-      return course;
+      return {
+        statusCode: HttpStatus.OK,
+        message: `Course with ID ${id} retrieved successfully`,
+        data: course,
+      };
     } catch (error) {
       throw new NotFoundException(error.message);
     }
   }
 
-  @RuleAccess(RuleAccessEnum.ADMIN)
-  @RuleAccess(RuleAccessEnum.MODERATOR)
+  @RuleAccess(RuleAccessEnum.ADMIN, RuleAccessEnum.MODERATOR)
   @UseGuards(AuthGuard, RuleAccessGuard)
   @Post()
   async createCourse(
@@ -77,8 +84,7 @@ export class CourseController {
     }
   }
 
-  @RuleAccess(RuleAccessEnum.ADMIN)
-  @RuleAccess(RuleAccessEnum.MODERATOR)
+  @RuleAccess(RuleAccessEnum.ADMIN, RuleAccessEnum.MODERATOR)
   @UseGuards(AuthGuard, RuleAccessGuard)
   @Put(':id')
   async updateCourse(
@@ -104,8 +110,7 @@ export class CourseController {
     }
   }
 
-  @RuleAccess(RuleAccessEnum.ADMIN)
-  @RuleAccess(RuleAccessEnum.MODERATOR)
+  @RuleAccess(RuleAccessEnum.ADMIN, RuleAccessEnum.MODERATOR)
   @UseGuards(AuthGuard, RuleAccessGuard)
   @Delete(':id')
   async deleteCourse(
