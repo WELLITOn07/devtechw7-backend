@@ -69,6 +69,7 @@ export class AuthService {
   async login(
     email: string,
     password: string,
+    application: string,
   ): Promise<{ access_token: string; user: User }> {
     const user = await this.prismaService.user.findFirst({
       where: { email },
@@ -78,13 +79,19 @@ export class AuthService {
       throw new UnauthorizedException('Email or password incorrect');
     }
 
-    const isValid = this.decryptPassword(user.password, password);
-
-    if (!isValid) {
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
       throw new UnauthorizedException('Email or password incorrect');
     }
 
-    const token = await this.createToken(user);
+    // Validate user access to the requested application
+    if (!user.apps.includes(application)) {
+      throw new UnauthorizedException(
+        `You do not have access to the ${application} application.`,
+      );
+    }
+
+    const token = this.createToken(user);
     return { access_token: token.access_token, user };
   }
 

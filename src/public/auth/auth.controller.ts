@@ -21,14 +21,25 @@ import { User } from '@prisma/client';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('login')
+   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() data: AuthLoginDto): Promise<{ access_token: string }> {
+  async login(
+    @Body() data: AuthLoginDto,
+  ): Promise<{ access_token: string; user: Omit<User, 'password'> }> {
     try {
-      const token = await this.authService.login(data.email, data.password);
-      return { access_token: token.access_token };
+      const { email, password, application } = data;
+      const { access_token, user } = await this.authService.login(
+        email,
+        password,
+        application,
+      );
+
+      return {
+        access_token,
+        user,
+      };
     } catch (error) {
-      throw new BadRequestException(error.message);
+      throw new BadRequestException(error.message || 'Login failed');
     }
   }
 
