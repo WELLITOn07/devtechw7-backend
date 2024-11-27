@@ -7,7 +7,4 @@ export class AuthLoginDto {
   @IsString()
   @MinLength(6)
   password: string;
-
-  @IsString()
-  application: string;
 }

@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from 'src/public/auth/_guards/auth.guard';
-import { UserService } from '../services/user.service';
+import { UserService } from '../_services/user.service';
 import { User, Prisma } from '@prisma/client';
 import { ParamNumberId } from 'src/public/_decorators/param-number-id.decorator';
 import { RuleAccess } from 'src/public/_decorators/rule-access.decorator';
@@ -34,7 +34,7 @@ export class UserController {
     if (!users) {
       throw new NotFoundException(`Users not found`);
     }
-    
+
     return {
       statusCode: HttpStatus.OK,
       message: 'Users retrieved successfully',

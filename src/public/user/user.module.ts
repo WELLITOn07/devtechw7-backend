@@ -6,8 +6,8 @@ import {
   NestModule,
   RequestMethod,
 } from '@nestjs/common';
-import { UserController } from './controllers/user.controller';
-import { UserService } from './services/user.service';
+import { UserController } from './_controllers/user.controller';
+import { UserService } from './_services/user.service';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { AuthGuard } from '../auth/_guards/auth.guard';
 import { CheckNumberIdMiddleware } from '../_middlewares/check-number-id.middleware';

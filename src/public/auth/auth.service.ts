@@ -1,41 +1,42 @@
 import {
   Injectable,
   UnauthorizedException,
-  NotFoundException,
   BadRequestException,
   ConflictException,
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { RuleAccessEnum } from '../_enums/rule-access.enum';
 import * as bcrypt from 'bcrypt';
+import { ApplicationService } from '../aplications/_services/aplication.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
     private readonly prismaService: PrismaService,
+    private readonly applicationService: ApplicationService,
   ) {}
 
-  private createToken(user: User): { access_token: string } {
+  private createToken(user: {
+    id: number;
+    name: string;
+    email: string;
+    rule: string[];
+  }): { access_token: string } {
     const payload = {
       sub: user.id,
       username: user.name,
       email: user.email,
       rule: user.rule,
-      apps: user.apps,
     };
 
     return {
-      access_token: this.jwtService.sign(
-        { ...payload },
-        {
-          expiresIn: '7d',
-          issuer: 'devtechw7-backend',
-          audience: 'users',
-        },
-      ),
+      access_token: this.jwtService.sign(payload, {
+        expiresIn: '7d',
+        issuer: 'devtechw7-backend',
+        audience: 'users',
+      }),
     };
   }
 
@@ -47,32 +48,28 @@ export class AuthService {
     }
   }
 
-  isValidToken(token: string): boolean {
-    try {
-      this.jwtService.verify(token);
-      return true;
-    } catch (error) {
-      return false;
-    }
-  }
-
   encryptPassword(password: string): string {
-    const salt = bcrypt.hashSync(password, 5);
-    return salt;
+    return bcrypt.hashSync(password, 5);
   }
 
   private decryptPassword(hash: string, password: string): boolean {
-    const valid = bcrypt.compareSync(password, hash);
-    return valid;
+    return bcrypt.compareSync(password, hash);
   }
 
   async login(
     email: string,
     password: string,
-    application: string,
-  ): Promise<{ access_token: string; user: User }> {
+    urlOrigin: string,
+  ): Promise<{ access_token: string; user: any }> {
     const user = await this.prismaService.user.findFirst({
       where: { email },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        password: true,
+        rule: true,
+      },
     });
 
     if (!user) {
@@ -84,20 +81,25 @@ export class AuthService {
       throw new UnauthorizedException('Email or password incorrect');
     }
 
-    // Validate user access to the requested application
-    if (!user.apps.includes(application)) {
-      throw new UnauthorizedException(
-        `You do not have access to the ${application} application.`,
-      );
-    }
+    await this.applicationService.validateAccess(urlOrigin, user.id);
 
-    const token = this.createToken(user);
-    return { access_token: token.access_token, user };
+    const token = this.createToken({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      rule: user.rule,
+    });
+
+    const { password: _, ...userWithoutPassword } = user;
+    return { access_token: token.access_token, user: userWithoutPassword };
   }
 
-  async registerUser(
-    data: User,
-  ): Promise<{ message: string; access_token: string }> {
+  async registerUser(data: {
+    name: string;
+    email: string;
+    password: string;
+    birthAt?: Date;
+  }): Promise<{ message: string; access_token: string }> {
     const userWithSameEmail = await this.prismaService.user.findFirst({
       where: { email: data.email },
     });
@@ -111,24 +113,26 @@ export class AuthService {
     data.password = this.encryptPassword(data.password);
 
     const userCreated = await this.prismaService.user.create({
-      data: { ...data, rule: data.rule ?? RuleAccessEnum.COMMON },
+      data: {
+        email: data.email,
+        name: data.name,
+        password: data.password,
+        rule: ['COMMON'],
+        birthAt: data.birthAt || new Date(),
+      },
     });
 
-    const token = await this.createToken(userCreated);
+    const token = this.createToken({
+      id: userCreated.id,
+      name: userCreated.name,
+      email: userCreated.email,
+      rule: userCreated.rule,
+    });
+
     return {
       message: 'User created successfully',
       access_token: token.access_token,
     };
-  }
-
-  async forgotPassword(email: string): Promise<{ message: string }> {
-    const user = await this.prismaService.user.findFirst({ where: { email } });
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    return { message: 'Password reset link sent' };
   }
 
   async resetPassword(
@@ -158,10 +162,30 @@ export class AuthService {
       data: { password: this.encryptPassword(newPassword) },
     });
 
-    const token = await this.createToken(userToUpdate);
+    const token = this.createToken({
+      id: userToUpdate.id,
+      name: userToUpdate.name,
+      email: userToUpdate.email,
+      rule: userToUpdate.rule,
+    });
+
     return {
       message: 'Password successfully reset',
       access_token: token.access_token,
+    };
+  }
+
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    const user = await this.prismaService.user.findFirst({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return {
+      message: 'Password reset email sent successfully',
     };
   }
 }

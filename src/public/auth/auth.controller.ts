@@ -6,32 +6,34 @@ import {
   HttpStatus,
   BadRequestException,
   ConflictException,
-  UseGuards,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthLoginDto } from './_dto/auth-login.dto';
 import { AuthForgotPasswordDto } from './_dto/auth-forgot.dto';
 import { AuthResetPasswordDto } from './_dto/auth-reset-password.dto';
 import { AuthGuard } from './_guards/auth.guard';
-import { userDecorator } from '../_decorators/user.decorator';
 import { User } from '@prisma/client';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-   @Post('login')
+  @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(
     @Body() data: AuthLoginDto,
+    @Req() request: any,
   ): Promise<{ access_token: string; user: Omit<User, 'password'> }> {
     try {
-      const { email, password, application } = data;
+      const { email, password } = data;
+      const urlOrigin = request.headers.host;
+
       const { access_token, user } = await this.authService.login(
         email,
         password,
-        application,
+        urlOrigin,
       );
 
       return {
@@ -86,10 +88,10 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @Post('me')
-  async me(@userDecorator() user: User) {
+  async me(@Body() user: User) {
     return {
       message: 'authenticated',
-      user: user,
+      user,
     };
   }
 }
