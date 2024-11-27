@@ -16,9 +16,14 @@ export class RuleAccessGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
+    
     if (!rule) {
       return true;
     }
-    return rule.includes(request.user.rule);
+
+    const userRules = request.user.rule;
+    const hasAccess = userRules.some((userRule: string) => rule.includes(userRule));
+
+    return hasAccess;
   }
 }

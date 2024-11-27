@@ -10,7 +10,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { Course, Prisma } from '@prisma/client';
-import { CourseService } from '../services/course.service';
+import { CourseService } from '../_services/course.service';
 import { ParamStringId } from 'src/public/_decorators/param-string-id.decorator';
 import { AuthGuard } from 'src/public/auth/_guards/auth.guard';
 import { RuleAccessGuard } from 'src/public/auth/_guards/rule-access.guard';

@@ -28,7 +28,7 @@ export class AuthController {
   ): Promise<{ access_token: string; user: Omit<User, 'password'> }> {
     try {
       const { email, password } = data;
-      const urlOrigin = request.headers.host;
+      const urlOrigin = request.headers.origin;
 
       const { access_token, user } = await this.authService.login(
         email,

@@ -10,15 +10,25 @@ import {
   HttpStatus,
   NotFoundException,
   ConflictException,
+  UseGuards,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateApplicationDto } from '../_dto/create-application.dto';
 import { UpdateApplicationDto } from '../_dto/update-application.dto';
+import { RuleAccess } from 'src/public/_decorators/rule-access.decorator';
+import { AuthGuard } from 'src/public/auth/_guards/auth.guard';
+import { RuleAccessGuard } from 'src/public/auth/_guards/rule-access.guard';
+import { RuleAccessEnum } from 'src/public/_enums/rule-access.enum';
 
 @Controller('applications')
 export class ApplicationController {
   constructor(private readonly prisma: PrismaService) {}
 
+  @RuleAccess(
+    RuleAccessEnum.ADMIN,
+    RuleAccessEnum.MODERATOR,
+  )
+  @UseGuards(AuthGuard, RuleAccessGuard)
   @Get()
   @HttpCode(HttpStatus.OK)
   async getApplications() {
@@ -35,6 +45,8 @@ export class ApplicationController {
     };
   }
 
+  @RuleAccess(RuleAccessEnum.ADMIN)
+  @UseGuards(AuthGuard, RuleAccessGuard)
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createApplication(@Body() data: CreateApplicationDto) {
@@ -59,13 +71,14 @@ export class ApplicationController {
     };
   }
 
+  @RuleAccess(RuleAccessEnum.ADMIN)
+  @UseGuards(AuthGuard, RuleAccessGuard)
   @Put(':id')
   @HttpCode(HttpStatus.OK)
   async updateApplication(
     @Param('id') id: number,
     @Body() data: UpdateApplicationDto,
   ) {
-    // Verificar se a aplicação existe
     const application = await this.prisma.application.findUnique({
       where: { id: Number(id) },
     });
@@ -86,10 +99,11 @@ export class ApplicationController {
     };
   }
 
+  @RuleAccess(RuleAccessEnum.ADMIN)
+  @UseGuards(AuthGuard, RuleAccessGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   async deleteApplication(@Param('id') id: number) {
-    // Verificar se a aplicação existe
     const application = await this.prisma.application.findUnique({
       where: { id: Number(id) },
     });

@@ -14,8 +14,8 @@ import { ApplicationModule } from '../aplications/aplication.module';
       signOptions: { expiresIn: '1d' },
     }),
     forwardRef(() => UserModule),
+    forwardRef(() => ApplicationModule),
     PrismaModule,
-    ApplicationModule
   ],
   controllers: [AuthController],
   providers: [AuthService, AuthGuard],
