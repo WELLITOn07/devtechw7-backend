@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { PrismaClient } from '@prisma/client';
 import { ValidationPipe } from '@nestjs/common';
+import { HttpExceptionFilter } from './public/_filters/http-exception.filter';
 
 async function bootstrap() {
   const prisma = new PrismaClient();
@@ -23,6 +24,8 @@ async function bootstrap() {
   });
 
   app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalFilters(new HttpExceptionFilter());
+  
   await app.listen(3000, '0.0.0.0');
 }
 bootstrap();
