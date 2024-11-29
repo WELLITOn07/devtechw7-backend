@@ -5,7 +5,7 @@ import { UserModule } from '../user/user.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { AuthService } from './auth.service';
 import { AuthGuard } from './_guards/auth.guard';
-import { ApplicationModule } from '../aplications/aplication.module';
+import { AccessRuleModule } from '../access-rule/access-rule.module';
 
 @Module({
   imports: [
@@ -14,7 +14,7 @@ import { ApplicationModule } from '../aplications/aplication.module';
       signOptions: { expiresIn: '1d' },
     }),
     forwardRef(() => UserModule),
-    forwardRef(() => ApplicationModule),
+    forwardRef(() => AccessRuleModule),
     PrismaModule,
   ],
   controllers: [AuthController],

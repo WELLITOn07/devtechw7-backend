@@ -2,17 +2,17 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
-export class ApplicationService {
+export class AccessRuleService {
   constructor(private readonly prisma: PrismaService) {}
 
   async validateAccess(urlOrigin: string, userId: number): Promise<void> {
-    const application = await this.prisma.application.findFirst({
+    const accessRule = await this.prisma.accessRule.findFirst({
       where: { urlOrigin },
     });
 
-    if (!application) {
+    if (!accessRule) {
       throw new UnauthorizedException(
-        `Application associated with URL ${urlOrigin} was not found.`,
+        `Access rule for URL ${urlOrigin} was not found.`,
       );
     }
 
@@ -24,7 +24,7 @@ export class ApplicationService {
       throw new UnauthorizedException('User not found.');
     }
 
-    const isRoleAllowed = application.allowedRoles.some((role) =>
+    const isRoleAllowed = accessRule.allowedRoles.some((role) =>
       user.rule.includes(role),
     );
 

@@ -8,14 +8,14 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
-import { ApplicationService } from '../aplications/_services/aplication.service';
+import { AccessRuleService } from '../access-rule/_services/access-rule.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
     private readonly prismaService: PrismaService,
-    private readonly applicationService: ApplicationService,
+    private readonly accessRuleService: AccessRuleService,
   ) {}
 
   private createToken(user: {
@@ -81,7 +81,7 @@ export class AuthService {
       throw new UnauthorizedException('Email or password incorrect');
     }
 
-    await this.applicationService.validateAccess(urlOrigin, user.id);
+    await this.accessRuleService.validateAccess(urlOrigin, user.id);
 
     const token = this.createToken({
       id: user.id,

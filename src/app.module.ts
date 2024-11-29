@@ -6,7 +6,7 @@ import { BiomedsandraApiModule } from './biomedsandra-api/biomedsandra-api.modul
 import { UserModule } from './public/user/user.module';
 import { AuthModule } from './public/auth/auth.module';
 import { AppController } from './app.controller';
-import { ApplicationModule } from './public/aplications/aplication.module';
+import { AccessRuleModule } from './public/access-rule/access-rule.module';
 
 @Module({
   imports: [
@@ -27,7 +27,7 @@ import { ApplicationModule } from './public/aplications/aplication.module';
     AuthModule,
     UserModule,
     BiomedsandraApiModule,
-    ApplicationModule
+    AccessRuleModule,
   ],
   controllers: [AppController],
   providers: [

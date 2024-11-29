@@ -1,16 +1,11 @@
-// src/application/dto/create-application.dto.ts
 import { IsArray, IsString, IsNotEmpty } from 'class-validator';
 
-export class CreateApplicationDto {
+export class CreateAccessRuleDto {
   @IsString()
   @IsNotEmpty()
-  name: string;
+  urlOrigin: string;
 
   @IsArray()
   @IsString({ each: true })
   allowedRoles: string[];
-
-  @IsString()
-  @IsNotEmpty()
-  urlOrigin: string;
 }
