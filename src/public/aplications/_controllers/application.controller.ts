@@ -19,6 +19,7 @@ import { AuthGuard } from 'src/public/auth/_guards/auth.guard';
 import { RuleAccessGuard } from 'src/public/auth/_guards/rule-access.guard';
 import { CreateApplicationDto } from '../_dto/create-application.dto';
 import { UpdateApplicationDto } from '../_dto/update-application.dto';
+import { ParamNumberId } from 'src/public/_decorators/param-number-id.decorator';
 
 @Controller('applications')
 export class ApplicationController {
@@ -73,7 +74,7 @@ export class ApplicationController {
   @Put(':id')
   @HttpCode(HttpStatus.OK)
   async updateApplication(
-    @Param('id') id: number,
+    @ParamNumberId() id: number,
     @Body() data: UpdateApplicationDto,
   ) {
     const application = await this.prisma.application.findUnique({
@@ -100,7 +101,7 @@ export class ApplicationController {
   @UseGuards(AuthGuard, RuleAccessGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
-  async deleteApplication(@Param('id') id: number) {
+  async deleteApplication(@ParamNumberId() id: number) {
     const application = await this.prisma.application.findUnique({
       where: { id },
     });

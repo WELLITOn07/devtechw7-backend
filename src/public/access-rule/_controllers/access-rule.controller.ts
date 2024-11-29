@@ -19,6 +19,7 @@ import { RuleAccessGuard } from 'src/public/auth/_guards/rule-access.guard';
 import { RuleAccessEnum } from 'src/public/_enums/rule-access.enum';
 import { CreateAccessRuleDto } from '../_dto/create-access-rule.dto';
 import { UpdateAccessRuleDto } from '../_dto/update-access-rule.dto';
+import { ParamNumberId } from 'src/public/_decorators/param-number-id.decorator';
 
 @Controller('access-rules')
 export class AccessRuleController {
@@ -73,7 +74,7 @@ export class AccessRuleController {
   @Put(':id')
   @HttpCode(HttpStatus.OK)
   async updateAccessRule(
-    @Param('id') id: number,
+    @ParamNumberId() id: number,
     @Body() data: UpdateAccessRuleDto,
   ) {
     const accessRule = await this.prisma.accessRule.findUnique({
@@ -100,7 +101,7 @@ export class AccessRuleController {
   @UseGuards(AuthGuard, RuleAccessGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
-  async deleteAccessRule(@Param('id') id: number) {
+  async deleteAccessRule(@ParamNumberId() id: number) {
     const accessRule = await this.prisma.accessRule.findUnique({
       where: { id: Number(id) },
     });
