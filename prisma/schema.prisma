@@ -29,6 +29,17 @@ model AccessRule {
   @@schema("public")
 }
 
+model Application {
+  id           Int      @id @default(autoincrement())
+  name         String   @unique
+  description  String
+  controllers  String[]
+  allowedRoles String[]
+  createdAt    DateTime @default(now())
+
+  @@schema("public")
+}
+
 model Course {
   id          String    @id @default(uuid())
   title       String

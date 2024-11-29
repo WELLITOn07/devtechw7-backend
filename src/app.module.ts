@@ -7,6 +7,7 @@ import { UserModule } from './public/user/user.module';
 import { AuthModule } from './public/auth/auth.module';
 import { AppController } from './app.controller';
 import { AccessRuleModule } from './public/access-rule/access-rule.module';
+import { ApplicationModule } from './public/aplications/application.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { AccessRuleModule } from './public/access-rule/access-rule.module';
     UserModule,
     BiomedsandraApiModule,
     AccessRuleModule,
+    ApplicationModule,
   ],
   controllers: [AppController],
   providers: [
