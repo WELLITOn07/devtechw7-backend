@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Post,
-  Put,
   Delete,
   Body,
   HttpCode,
@@ -77,7 +76,6 @@ export class UserController {
         throw new Error('Invalid input: Data should be a non-empty array.');
       }
 
-      // Validar que cada objeto tem as chaves necessárias
       data.forEach((user) => {
         if (!user.email || !user.name || !user.password) {
           throw new Error('Missing required fields: email, name, or password.');
