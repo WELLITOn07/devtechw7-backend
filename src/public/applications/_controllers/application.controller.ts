@@ -8,32 +8,34 @@ import {
   Param,
   HttpCode,
   HttpStatus,
-  NotFoundException,
-  ConflictException,
   UseGuards,
+  ConflictException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { RuleAccess } from 'src/public/_decorators/rule-access.decorator';
 import { RuleAccessEnum } from 'src/public/_enums/rule-access.enum';
 import { AuthGuard } from 'src/public/auth/_guards/auth.guard';
 import { RuleAccessGuard } from 'src/public/auth/_guards/rule-access.guard';
+import { ApplicationService } from '../_services/application.service';
 import { CreateApplicationDto } from '../_dto/create-application.dto';
 import { UpdateApplicationDto } from '../_dto/update-application.dto';
 import { ParamNumberId } from 'src/public/_decorators/param-number-id.decorator';
 
 @Controller('applications')
 export class ApplicationController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly applicationService: ApplicationService) {}
 
   @RuleAccess(RuleAccessEnum.ADMIN, RuleAccessEnum.MODERATOR)
   @UseGuards(AuthGuard, RuleAccessGuard)
   @Get()
   @HttpCode(HttpStatus.OK)
   async getApplications() {
-    const applications = await this.prisma.application.findMany();
+    const applications = await this.applicationService.findAll();
 
     if (!applications || applications.length === 0) {
-      throw new NotFoundException('No applications found');
+      return {
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'No applications found',
+      };
     }
 
     return {
@@ -47,26 +49,27 @@ export class ApplicationController {
   @UseGuards(AuthGuard, RuleAccessGuard)
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async createApplication(@Body() data: CreateApplicationDto) {
-    const existingApplication = await this.prisma.application.findUnique({
-      where: { name: data.name },
-    });
-
-    if (existingApplication) {
+  async createApplication(@Body() data: CreateApplicationDto[]) {
+    try {
+      if (Array.isArray(data)) {
+        await this.applicationService.upsertBulk(data);
+        return {
+          statusCode: HttpStatus.CREATED,
+          message: `${data.length} application(s) processed successfully.`,
+        };
+      } else {
+        const application = await this.applicationService.create(data);
+        return {
+          statusCode: HttpStatus.CREATED,
+          message: 'Application created successfully',
+          data: application,
+        };
+      }
+    } catch (error) {
       throw new ConflictException(
-        `Application with name ${data.name} already exists`,
+        `Failed to process application(s): ${error.message}`,
       );
     }
-
-    const application = await this.prisma.application.create({
-      data,
-    });
-
-    return {
-      statusCode: HttpStatus.CREATED,
-      message: 'Application created successfully',
-      data: application,
-    };
   }
 
   @RuleAccess(RuleAccessEnum.ADMIN)
@@ -77,19 +80,7 @@ export class ApplicationController {
     @ParamNumberId() id: number,
     @Body() data: UpdateApplicationDto,
   ) {
-    const application = await this.prisma.application.findUnique({
-      where: { id },
-    });
-
-    if (!application) {
-      throw new NotFoundException(`Application with ID ${id} not found`);
-    }
-
-    const updatedApplication = await this.prisma.application.update({
-      where: { id },
-      data,
-    });
-
+    const updatedApplication = await this.applicationService.update(id, data);
     return {
       statusCode: HttpStatus.OK,
       message: 'Application updated successfully',
@@ -102,18 +93,7 @@ export class ApplicationController {
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   async deleteApplication(@ParamNumberId() id: number) {
-    const application = await this.prisma.application.findUnique({
-      where: { id },
-    });
-
-    if (!application) {
-      throw new NotFoundException(`Application with ID ${id} not found`);
-    }
-
-    await this.prisma.application.delete({
-      where: { id },
-    });
-
+    await this.applicationService.delete(id);
     return {
       statusCode: HttpStatus.OK,
       message: 'Application deleted successfully',
