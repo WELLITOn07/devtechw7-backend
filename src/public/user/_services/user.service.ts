@@ -42,22 +42,22 @@ export class UserService {
     });
   }
 
-  async createUser(
-    data: Prisma.UserCreateInput | Prisma.UserCreateInput[],
-  ): Promise<User | User[]> {
-    if (Array.isArray(data)) {
-      await this.prisma.user.createMany({
-        data,
-        skipDuplicates: true,
-      });
+  async createUser(data: Prisma.UserCreateInput[]): Promise<void> {
+    if (data.length === 0) {
+      throw new Error('No user data provided for creation.');
+    }
 
-      const emails = data.map((user) => user.email); // Supondo que os emails são únicos
-      return this.prisma.user.findMany({
-        where: { email: { in: emails } },
-      });
-    } else {
-      return this.prisma.user.create({
-        data,
+    for (const user of data) {
+      await this.prisma.user.upsert({
+        where: { email: user.email }, 
+        update: {
+          name: user.name,
+          password: user.password,
+          birthAt: user.birthAt,
+          createdAt: user.createdAt,
+          rule: user.rule,
+        },
+        create: user,
       });
     }
   }

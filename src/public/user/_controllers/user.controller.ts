@@ -69,27 +69,27 @@ export class UserController {
   @UseGuards(AuthGuard, RuleAccessGuard)
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async createUser(
-    @Body() data: Prisma.UserCreateInput | Prisma.UserCreateInput[],
-  ): Promise<{ statusCode: number; message: string; data: User | User[] }> {
+  async createUsers(
+    @Body() data: Prisma.UserCreateInput[],
+  ): Promise<{ statusCode: number; message: string }> {
     try {
-      let createdUser: User | User[];
-
-      if (Array.isArray(data)) {
-        createdUser = await this.userService.createUser(data);
-        return {
-          statusCode: HttpStatus.CREATED,
-          message: `users created successfully.`,
-          data: createdUser,
-        };
-      } else {
-        createdUser = await this.userService.createUser(data);
-        return {
-          statusCode: HttpStatus.CREATED,
-          message: 'User created successfully.',
-          data: createdUser,
-        };
+      if (!Array.isArray(data) || data.length === 0) {
+        throw new Error('Invalid input: Data should be a non-empty array.');
       }
+
+      // Validar que cada objeto tem as chaves necessárias
+      data.forEach((user) => {
+        if (!user.email || !user.name || !user.password) {
+          throw new Error('Missing required fields: email, name, or password.');
+        }
+      });
+
+      await this.userService.createUser(data);
+
+      return {
+        statusCode: HttpStatus.CREATED,
+        message: `${data.length} user(s) created successfully.`,
+      };
     } catch (error) {
       throw new NotFoundException(`Failed to create user(s): ${error.message}`);
     }
