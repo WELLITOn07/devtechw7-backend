@@ -42,6 +42,26 @@ export class UserService {
     });
   }
 
+  async createUser(
+    data: Prisma.UserCreateInput | Prisma.UserCreateInput[],
+  ): Promise<User | User[]> {
+    if (Array.isArray(data)) {
+      await this.prisma.user.createMany({
+        data,
+        skipDuplicates: true,
+      });
+
+      const emails = data.map((user) => user.email); // Supondo que os emails são únicos
+      return this.prisma.user.findMany({
+        where: { email: { in: emails } },
+      });
+    } else {
+      return this.prisma.user.create({
+        data,
+      });
+    }
+  }
+
   async deleteUser(id: number): Promise<User | null> {
     const userToDelete = await this.getUserById(id);
 

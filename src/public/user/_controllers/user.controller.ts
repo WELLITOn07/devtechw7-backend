@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Post,
   Put,
   Delete,
   Body,
@@ -66,26 +67,31 @@ export class UserController {
 
   @RuleAccess(RuleAccessEnum.ADMIN)
   @UseGuards(AuthGuard, RuleAccessGuard)
-  @Put(':id')
-  @HttpCode(HttpStatus.OK)
-  async updateUser(
-    @ParamNumberId() id: number,
-    @Body() data: Prisma.UserUpdateInput,
-  ): Promise<{ statusCode: number; message: string; data: User }> {
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  async createUser(
+    @Body() data: Prisma.UserCreateInput | Prisma.UserCreateInput[],
+  ): Promise<{ statusCode: number; message: string; data: User | User[] }> {
     try {
-      const updatedUser = await this.userService.updateUser(id, data);
-      if (!updatedUser) {
-        throw new NotFoundException(`User with ID ${id} not found for update`);
+      let createdUser: User | User[];
+
+      if (Array.isArray(data)) {
+        createdUser = await this.userService.createUser(data);
+        return {
+          statusCode: HttpStatus.CREATED,
+          message: `users created successfully.`,
+          data: createdUser,
+        };
+      } else {
+        createdUser = await this.userService.createUser(data);
+        return {
+          statusCode: HttpStatus.CREATED,
+          message: 'User created successfully.',
+          data: createdUser,
+        };
       }
-      return {
-        statusCode: HttpStatus.OK,
-        message: `User with ID ${id} updated successfully`,
-        data: updatedUser,
-      };
     } catch (error) {
-      throw new NotFoundException(
-        `Failed to update user with ID ${id}: ${error.message}`,
-      );
+      throw new NotFoundException(`Failed to create user(s): ${error.message}`);
     }
   }
 
@@ -116,3 +122,4 @@ export class UserController {
     }
   }
 }
+
