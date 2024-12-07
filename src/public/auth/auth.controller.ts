@@ -6,11 +6,14 @@ import {
   HttpStatus,
   BadRequestException,
   ConflictException,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthLoginDto } from './dto/auth-login.dto';
-import { AuthForgotPasswordDto } from './dto/auth-forgot.dto';
-import { AuthResetPasswordDto } from './dto/auth-reset-password.dto';
+import { AuthLoginDto } from './_dto/auth-login.dto';
+import { AuthForgotPasswordDto } from './_dto/auth-forgot.dto';
+import { AuthResetPasswordDto } from './_dto/auth-reset-password.dto';
+import { AuthGuard } from './_guards/auth.guard';
 import { User } from '@prisma/client';
 
 @Controller('auth')
@@ -19,12 +22,26 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() data: AuthLoginDto): Promise<{ access_token: string }> {
+  async login(
+    @Body() data: AuthLoginDto,
+    @Req() request: any,
+  ): Promise<{ access_token: string; user: Omit<User, 'password'> }> {
     try {
-      const token = await this.authService.login(data.email, data.password);
-      return { access_token: token.access_token };
+      const { email, password } = data;
+      const urlOrigin = request.headers.origin;
+
+      const { access_token, user } = await this.authService.login(
+        email,
+        password,
+        urlOrigin,
+      );
+
+      return {
+        access_token,
+        user,
+      };
     } catch (error) {
-      throw new BadRequestException(error.message);
+      throw new BadRequestException(error.message || 'Login failed');
     }
   }
 
@@ -59,7 +76,7 @@ export class AuthController {
     @Body() data: AuthResetPasswordDto,
   ): Promise<{ message: string; access_token: string }> {
     try {
-      const tokenData = await this.authService.validateToken(data.token);
+      const tokenData = this.authService.validateToken(data.token);
       return await this.authService.resetPassword(
         tokenData.email,
         data.password,
@@ -67,5 +84,14 @@ export class AuthController {
     } catch (error) {
       throw new BadRequestException(error.message);
     }
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('me')
+  async me(@Body() user: User) {
+    return {
+      message: 'authenticated',
+      user,
+    };
   }
 }

@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["multiSchema"]  
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
@@ -8,20 +8,40 @@ datasource db {
   url      = env("DATABASE_URL")
   schemas  = ["public", "course"]
 }
-model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String
-  password  String 
-  birthAt   DateTime 
-  createdAt DateTime @default(now())
-  role      String   @default("COMMON")
-  apps      String[] 
 
-  @@schema("public") 
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  name      String
+  password  String
+  birthAt   DateTime?
+  createdAt DateTime  @default(now())
+  rule      String[]  @default(["COMMON"])
+
+  @@schema("public")
 }
+model AccessRule {
+  id           Int      @id @default(autoincrement())
+  urlOrigin    String   @unique
+  allowedRoles String[]
+  createdAt    DateTime @default(now())
+
+  @@schema("public")
+}
+
+model Application {
+  id           Int      @id @default(autoincrement())
+  name         String   @unique
+  description  String
+  controllers  String[]
+  allowedRoles String[]
+  createdAt    DateTime @default(now())
+
+  @@schema("public")
+}
+
 model Course {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   title       String
   description String
   cover       String
@@ -35,14 +55,13 @@ model Course {
   @@schema("course")
 }
 
-
 model Price {
-  id         Int    @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   original   String
   discounted String
   courses    Course[] @relation("CourseToPrice")
 
-  @@schema("course")  
+  @@schema("course")
 }
 
 model Subject {
@@ -56,12 +75,11 @@ model Subject {
 }
 
 model Work {
-  id       Int     @id @default(autoincrement())
+  id       Int    @id @default(autoincrement())
   title    String
   url      String
   courseId String
-  course   Course   @relation(fields: [courseId], references: [id])
+  course   Course @relation(fields: [courseId], references: [id])
 
   @@schema("course")
 }
-

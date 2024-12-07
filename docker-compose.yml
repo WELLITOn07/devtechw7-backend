@@ -6,7 +6,7 @@ services:
     env_file:
       - .env.development 
     environment:
-      - NODE_ENV=${NODE_ENV:-development} # Define NODE_ENV, mas permite sobrescrever
+      - NODE_ENV=${NODE_ENV:-development}
     ports:
       - "3000:3000"
       - "9229:9229"

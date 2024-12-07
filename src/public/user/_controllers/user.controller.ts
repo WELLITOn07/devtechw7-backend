@@ -2,22 +2,26 @@ import {
   Controller,
   Get,
   Post,
-  Put,
   Delete,
   Body,
   HttpCode,
   HttpStatus,
-  ConflictException,
   NotFoundException,
+  UseGuards,
 } from '@nestjs/common';
-import { UserService } from '../services/user.service';
+import { AuthGuard } from 'src/public/auth/_guards/auth.guard';
+import { UserService } from '../_services/user.service';
 import { User, Prisma } from '@prisma/client';
-import { ParamNumberId } from 'src/public/decorators/param-number-id.decorator';
+import { ParamNumberId } from 'src/public/_decorators/param-number-id.decorator';
+import { RuleAccess } from 'src/public/_decorators/rule-access.decorator';
+import { RuleAccessEnum } from 'src/public/_enums/rule-access.enum';
+import { RuleAccessGuard } from 'src/public/auth/_guards/rule-access.guard';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
+  @RuleAccess(RuleAccessEnum.ADMIN)
+  @UseGuards(AuthGuard, RuleAccessGuard)
   @Get()
   @HttpCode(HttpStatus.OK)
   async getUsers(): Promise<{
@@ -26,6 +30,11 @@ export class UserController {
     data: User[];
   }> {
     const users = await this.userService.getUsers();
+
+    if (!users) {
+      throw new NotFoundException(`Users not found`);
+    }
+
     return {
       statusCode: HttpStatus.OK,
       message: 'Users retrieved successfully',
@@ -33,6 +42,8 @@ export class UserController {
     };
   }
 
+  @RuleAccess(RuleAccessEnum.ADMIN)
+  @UseGuards(AuthGuard, RuleAccessGuard)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   async getUserById(
@@ -53,29 +64,37 @@ export class UserController {
     }
   }
 
-  @Put(':id')
-  @HttpCode(HttpStatus.OK)
-  async updateUser(
-    @ParamNumberId() id: number,
-    @Body() data: Prisma.UserUpdateInput,
-  ): Promise<{ statusCode: number; message: string; data: User }> {
+  @RuleAccess(RuleAccessEnum.ADMIN)
+  @UseGuards(AuthGuard, RuleAccessGuard)
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  async createUsers(
+    @Body() data: Prisma.UserCreateInput[],
+  ): Promise<{ statusCode: number; message: string }> {
     try {
-      const updatedUser = await this.userService.updateUser(id, data);
-      if (!updatedUser) {
-        throw new NotFoundException(`User with ID ${id} not found for update`);
+      if (!Array.isArray(data) || data.length === 0) {
+        throw new Error('Invalid input: Data should be a non-empty array.');
       }
+
+      data.forEach((user) => {
+        if (!user.email || !user.name || !user.password) {
+          throw new Error('Missing required fields: email, name, or password.');
+        }
+      });
+
+      await this.userService.createUser(data);
+
       return {
-        statusCode: HttpStatus.OK,
-        message: `User with ID ${id} updated successfully`,
-        data: updatedUser,
+        statusCode: HttpStatus.CREATED,
+        message: `${data.length} user(s) created successfully.`,
       };
     } catch (error) {
-      throw new NotFoundException(
-        `Failed to update user with ID ${id}: ${error.message}`,
-      );
+      throw new NotFoundException(`Failed to create user(s): ${error.message}`);
     }
   }
 
+  @RuleAccess(RuleAccessEnum.ADMIN)
+  @UseGuards(AuthGuard, RuleAccessGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   async deleteUser(
@@ -101,3 +120,4 @@ export class UserController {
     }
   }
 }
+
