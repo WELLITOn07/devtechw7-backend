@@ -20,6 +20,7 @@ import { RuleAccessEnum } from 'src/public/_enums/rule-access.enum';
 import { CreateAccessRuleDto } from '../_dto/create-access-rule.dto';
 import { UpdateAccessRuleDto } from '../_dto/update-access-rule.dto';
 import { ParamNumberId } from 'src/public/_decorators/param-number-id.decorator';
+import { Prisma } from '@prisma/client';
 
 @Controller('access-rules')
 export class AccessRuleController {
@@ -47,26 +48,31 @@ export class AccessRuleController {
   @UseGuards(AuthGuard, RuleAccessGuard)
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async createAccessRule(@Body() data: CreateAccessRuleDto) {
-    const existingRule = await this.prisma.accessRule.findUnique({
-      where: { urlOrigin: data.urlOrigin },
-    });
+  async createOrUpdateAccessRules(
+    @Body() data: Prisma.AccessRuleCreateInput[],
+  ): Promise<{ statusCode: number; message: string }> {
+    try {
+      if (!Array.isArray(data) || data.length === 0) {
+        throw new Error('Invalid input: Data should be a non-empty array.');
+      }
+      
+      for (const rule of data) {
+        await this.prisma.accessRule.upsert({
+          where: { urlOrigin: rule.urlOrigin },
+          update: {
+            allowedRoles: rule.allowedRoles,
+          },
+          create: rule,
+        });
+      }
 
-    if (existingRule) {
-      throw new ConflictException(
-        `Access rule for URL ${data.urlOrigin} already exists`,
-      );
+      return {
+        statusCode: HttpStatus.CREATED,
+        message: `${data.length} access rule(s) processed successfully.`,
+      };
+    } catch (error) {
+      throw new Error(`Failed to process access rule(s): ${error.message}`);
     }
-
-    const accessRule = await this.prisma.accessRule.create({
-      data,
-    });
-
-    return {
-      statusCode: HttpStatus.CREATED,
-      message: 'Access rule created successfully',
-      data: accessRule,
-    };
   }
 
   @RuleAccess(RuleAccessEnum.ADMIN)
