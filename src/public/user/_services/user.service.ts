@@ -43,21 +43,35 @@ export class UserService {
   }
 
   async createUser(data: Prisma.UserCreateInput[]): Promise<void> {
-    if (data.length === 0) {
-      throw new Error('No user data provided for creation.');
-    }
-
+     if (data.length === 0) {
+       throw new Error('No user data provided for creation.');
+     }
+    
     for (const user of data) {
+      const formattedBirthAt =
+        user.birthAt instanceof Date
+          ? user.birthAt.toISOString()
+          : typeof user.birthAt === 'string'
+            ? new Date(user.birthAt).toISOString()
+            : null;
+
       await this.prisma.user.upsert({
-        where: { email: user.email }, 
+        where: { email: user.email },
         update: {
           name: user.name,
           password: user.password,
-          birthAt: user.birthAt,
-          createdAt: user.createdAt,
-          rule: user.rule,
+          birthAt: formattedBirthAt,
+          createdAt: user.createdAt || undefined,
+          rule: user.rule || [],
         },
-        create: user,
+        create: {
+          email: user.email,
+          name: user.name,
+          password: user.password,
+          birthAt: formattedBirthAt,
+          createdAt: user.createdAt || undefined,
+          rule: user.rule || [],
+        },
       });
     }
   }
