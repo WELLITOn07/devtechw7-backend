@@ -48,19 +48,12 @@ export class UserService {
      }
     
     for (const user of data) {
-      const formattedBirthAt =
-        user.birthAt instanceof Date
-          ? user.birthAt.toISOString()
-          : typeof user.birthAt === 'string'
-            ? new Date(user.birthAt).toISOString()
-            : null;
-
       await this.prisma.user.upsert({
         where: { email: user.email },
         update: {
           name: user.name,
           password: user.password,
-          birthAt: formattedBirthAt,
+          birthAt: user.birthAt || undefined,
           createdAt: user.createdAt || undefined,
           rule: user.rule || [],
         },
@@ -68,7 +61,7 @@ export class UserService {
           email: user.email,
           name: user.name,
           password: user.password,
-          birthAt: formattedBirthAt,
+          birthAt: user.birthAt || undefined,
           createdAt: user.createdAt || undefined,
           rule: user.rule || [],
         },

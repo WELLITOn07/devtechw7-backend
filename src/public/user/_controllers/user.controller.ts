@@ -16,6 +16,7 @@ import { ParamNumberId } from 'src/public/_decorators/param-number-id.decorator'
 import { RuleAccess } from 'src/public/_decorators/rule-access.decorator';
 import { RuleAccessEnum } from 'src/public/_enums/rule-access.enum';
 import { RuleAccessGuard } from 'src/public/auth/_guards/rule-access.guard';
+import { ValidateAndTransformUsers } from '../_decorators/validate-and-transform-users.decorator';
 
 @Controller('user')
 export class UserController {
@@ -69,7 +70,7 @@ export class UserController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createUsers(
-    @Body() data: Prisma.UserCreateInput[],
+    @ValidateAndTransformUsers() data: Prisma.UserCreateInput[],
   ): Promise<{ statusCode: number; message: string }> {
     try {
       if (!Array.isArray(data) || data.length === 0) {
