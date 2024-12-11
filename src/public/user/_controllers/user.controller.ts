@@ -8,6 +8,7 @@ import {
   HttpStatus,
   NotFoundException,
   UseGuards,
+  Put,
 } from '@nestjs/common';
 import { AuthGuard } from 'src/public/auth/_guards/auth.guard';
 import { UserService } from '../_services/user.service';
@@ -16,6 +17,7 @@ import { ParamNumberId } from 'src/public/_decorators/param-number-id.decorator'
 import { RuleAccess } from 'src/public/_decorators/rule-access.decorator';
 import { RuleAccessEnum } from 'src/public/_enums/rule-access.enum';
 import { RuleAccessGuard } from 'src/public/auth/_guards/rule-access.guard';
+import { ValidateAndTransformUsers } from '../_decorators/validate-and-transform-users.decorator';
 
 @Controller('user')
 export class UserController {
@@ -69,7 +71,7 @@ export class UserController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createUsers(
-    @Body() data: Prisma.UserCreateInput[],
+    @ValidateAndTransformUsers() data: Prisma.UserCreateInput[],
   ): Promise<{ statusCode: number; message: string }> {
     try {
       if (!Array.isArray(data) || data.length === 0) {
@@ -90,6 +92,26 @@ export class UserController {
       };
     } catch (error) {
       throw new NotFoundException(`Failed to create user(s): ${error.message}`);
+    }
+  }
+
+  @RuleAccess(RuleAccessEnum.ADMIN)
+  @UseGuards(AuthGuard, RuleAccessGuard)
+  @Put(':id')
+  @HttpCode(HttpStatus.OK)
+  async updateUser(
+    @ParamNumberId() userId: number,
+    @Body() user: Prisma.UserUpdateInput,
+  ): Promise<{ statusCode: number; message: string }> {
+    try {
+      await this.userService.updateUsers(userId, user);
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: `User with ID ${userId} updated successfully.`,
+      };
+    } catch (error) {
+      throw new NotFoundException(`Failed to update user: ${error.message}`);
     }
   }
 
@@ -120,4 +142,3 @@ export class UserController {
     }
   }
 }
-

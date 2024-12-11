@@ -98,7 +98,7 @@ export class AuthService {
     name: string;
     email: string;
     password: string;
-    birthAt?: Date;
+    birthAt?: Date | string;
   }): Promise<{ message: string; access_token: string }> {
     const userWithSameEmail = await this.prismaService.user.findFirst({
       where: { email: data.email },

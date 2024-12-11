@@ -43,23 +43,45 @@ export class UserService {
   }
 
   async createUser(data: Prisma.UserCreateInput[]): Promise<void> {
-    if (data.length === 0) {
+    if (!Array.isArray(data) || data.length === 0) {
       throw new Error('No user data provided for creation.');
     }
 
     for (const user of data) {
-      await this.prisma.user.upsert({
-        where: { email: user.email }, 
-        update: {
-          name: user.name,
-          password: user.password,
-          birthAt: user.birthAt,
-          createdAt: user.createdAt,
-          rule: user.rule,
-        },
-        create: user,
-      });
+      const userPayload = {
+        name: user.name,
+        email: user.email,
+        password: user.password,
+        birthAt: user.birthAt,
+      };
+
+      try {
+        await this.authService.registerUser(userPayload);
+      } catch (error) {
+        console.error(`Failed to create user ${user.email}:`, error.message);
+        throw error;
+      }
     }
+  }
+
+  async updateUsers(
+    userId: number,
+    user: Prisma.UserUpdateInput,
+  ): Promise<void> {
+     const existingUser = await this.getUserById(userId);
+
+      if (!existingUser) {
+        throw new Error(`User with ID ${userId} not found`);
+      }
+
+      if (user.password) {
+        user.password = this.authService.encryptPassword(String(user.password));
+      }
+
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: user,
+      });
   }
 
   async deleteUser(id: number): Promise<User | null> {
