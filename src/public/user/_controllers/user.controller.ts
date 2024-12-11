@@ -8,6 +8,7 @@ import {
   HttpStatus,
   NotFoundException,
   UseGuards,
+  Put,
 } from '@nestjs/common';
 import { AuthGuard } from 'src/public/auth/_guards/auth.guard';
 import { UserService } from '../_services/user.service';
@@ -91,6 +92,26 @@ export class UserController {
       };
     } catch (error) {
       throw new NotFoundException(`Failed to create user(s): ${error.message}`);
+    }
+  }
+
+  @RuleAccess(RuleAccessEnum.ADMIN)
+  @UseGuards(AuthGuard, RuleAccessGuard)
+  @Put(':id')
+  @HttpCode(HttpStatus.OK)
+  async updateUser(
+    @ParamNumberId() userId: number,
+    @Body() user: Prisma.UserUpdateInput,
+  ): Promise<{ statusCode: number; message: string }> {
+    try {
+      await this.userService.updateUsers(userId, user);
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: `User with ID ${userId} updated successfully.`,
+      };
+    } catch (error) {
+      throw new NotFoundException(`Failed to update user: ${error.message}`);
     }
   }
 

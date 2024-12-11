@@ -64,6 +64,26 @@ export class UserService {
     }
   }
 
+  async updateUsers(
+    userId: number,
+    user: Prisma.UserUpdateInput,
+  ): Promise<void> {
+     const existingUser = await this.getUserById(userId);
+
+      if (!existingUser) {
+        throw new Error(`User with ID ${userId} not found`);
+      }
+
+      if (user.password) {
+        user.password = this.authService.encryptPassword(String(user.password));
+      }
+
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: user,
+      });
+  }
+
   async deleteUser(id: number): Promise<User | null> {
     const userToDelete = await this.getUserById(id);
 
