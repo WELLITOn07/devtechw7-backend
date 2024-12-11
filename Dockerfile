@@ -1,43 +1,55 @@
 # Etapa 1: Construção
-FROM node:18-alpine AS builder
+FROM node:18-alpine3.16 AS builder
+
+# Alterar repositórios para evitar problemas de rede
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirror.leaseweb.com/g' /etc/apk/repositories
+
+# Instalar dependências do sistema
+RUN apk add --no-cache openssl bash
 
 WORKDIR /app
 
-# Copia o package.json e instala TODAS as dependências
-COPY package*.json ./
+# Copiar dependências
+COPY package.json package-lock.json ./
 RUN npm install --quiet --no-optional --no-fund --loglevel=error
 
-# Copia o código-fonte após instalar dependências
+# Copiar código-fonte
 COPY . .
 
-# Gera o Prisma Client ANTES do build
+# Gerar Prisma Client
 RUN npx prisma generate --schema=/app/prisma/schema.prisma
 
-# Executa o build da aplicação
+# Executar build
 RUN npm run build
 
 # Etapa 2: Produção
-FROM node:18-alpine AS production
+FROM node:18-alpine3.16 AS production
+
+# Alterar repositórios para evitar problemas de rede
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirror.leaseweb.com/g' /etc/apk/repositories
+
+# Instalar dependências do sistema
+RUN apk add --no-cache openssl bash
 
 WORKDIR /app
 
-# Copia o package.json e instala as dependências de produção
-COPY package*.json ./
-RUN npm install --only=production
+# Instalar dependências de produção
+COPY package.json package-lock.json ./
+RUN npm install --production --quiet --no-optional --no-fund --loglevel=error
 
-# Copia o build e o Prisma Client da etapa anterior
+# Copiar artefatos do build
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
 
-# Copia o arquivo de variáveis de ambiente de produção
+# Variáveis de ambiente
 COPY .env.production .env
 
-# Expor a porta 3000
+# Expor porta
 EXPOSE 3000
 
-# Define a variável de ambiente padrão como "production"
+# Definir ambiente
 ENV NODE_ENV production
 
-# Comando de execução
+# Iniciar aplicação
 CMD ["npm", "run", "prod"]
