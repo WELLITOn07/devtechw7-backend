@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma, Course } from '@prisma/client';
 
@@ -87,22 +87,35 @@ export class CourseService {
     });
   }
 
-  async deleteCourse(id: string): Promise<Course> {
-    await this.prisma.subject.deleteMany({
-      where: { courseId: id },
-    });
+  async deleteCourse(id: string): Promise<Boolean> {
+    try {
+      const course = await this.prisma.course.findUnique({
+        where: { id },
+        include: { price: true },
+      });
 
-    await this.prisma.work.deleteMany({
-      where: { courseId: id },
-    });
+      await this.prisma.subject.deleteMany({
+        where: { courseId: course.id },
+      });
 
-    return this.prisma.course.delete({
-      where: { id },
-      include: {
-        price: true,
-        subjects: true,
-        works: true,
-      },
-    });
+      await this.prisma.work.deleteMany({
+        where: { courseId: course.id },
+      });
+
+      if (!course) {
+        throw new Error(`Course with ID ${id} not found`);
+      }
+
+      if (course.priceId) {
+        await this.prisma.price.delete({
+          where: { id: course.priceId },
+        });
+      }
+
+      return true;
+    } catch (error) {
+      console.error(`Failed to delete course with ID ${id}:`, error);
+      throw new Error(`Failed to delete course with ID ${id}`);
+    }
   }
 }

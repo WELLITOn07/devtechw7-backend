@@ -5,10 +5,35 @@ CREATE SCHEMA IF NOT EXISTS "course";
 CREATE TABLE "public"."User" (
     "id" SERIAL NOT NULL,
     "email" TEXT NOT NULL,
-    "name" TEXT,
+    "name" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "birthAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "rule" TEXT[] DEFAULT ARRAY['COMMON']::TEXT[],
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."AccessRule" (
+    "id" SERIAL NOT NULL,
+    "urlOrigin" TEXT NOT NULL,
+    "allowedRoles" TEXT[],
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "AccessRule_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."Application" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "controllers" TEXT[],
+    "allowedRoles" TEXT[],
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Application_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -35,7 +60,7 @@ CREATE TABLE "course"."Price" (
 
 -- CreateTable
 CREATE TABLE "course"."Subject" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "category" TEXT NOT NULL,
     "topics" TEXT[],
     "courseId" TEXT NOT NULL,
@@ -45,7 +70,7 @@ CREATE TABLE "course"."Subject" (
 
 -- CreateTable
 CREATE TABLE "course"."Work" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "url" TEXT NOT NULL,
     "courseId" TEXT NOT NULL,
@@ -56,8 +81,14 @@ CREATE TABLE "course"."Work" (
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "public"."User"("email");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "AccessRule_urlOrigin_key" ON "public"."AccessRule"("urlOrigin");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Application_name_key" ON "public"."Application"("name");
+
 -- AddForeignKey
-ALTER TABLE "course"."Course" ADD CONSTRAINT "Course_priceId_fkey" FOREIGN KEY ("priceId") REFERENCES "course"."Price"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "course"."Course" ADD CONSTRAINT "Course_priceId_fkey" FOREIGN KEY ("priceId") REFERENCES "course"."Price"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "course"."Subject" ADD CONSTRAINT "Subject_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "course"."Course"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
