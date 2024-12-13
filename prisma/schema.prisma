@@ -47,7 +47,7 @@ model Course {
   cover       String
   link        String
   type        String
-  price       Price     @relation("CourseToPrice", fields: [priceId], references: [id])
+  price       Price     @relation("CourseToPrice", fields: [priceId], references: [id], onDelete: Cascade)
   priceId     Int
   subjects    Subject[]
   works       Work[]
