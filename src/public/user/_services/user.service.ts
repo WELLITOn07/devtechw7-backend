@@ -74,10 +74,6 @@ export class UserService {
         throw new Error(`User with ID ${userId} not found`);
       }
 
-      if (user.password) {
-        user.password = this.authService.encryptPassword(String(user.password));
-      }
-
       await this.prisma.user.update({
         where: { id: userId },
         data: user,
