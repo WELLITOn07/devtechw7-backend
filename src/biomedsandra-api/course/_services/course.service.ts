@@ -67,17 +67,47 @@ export class CourseService {
     });
   }
 
-  async updateCourse(
-    id: string,
-    data: Prisma.CourseUpdateInput,
-  ): Promise<Course> {
+  async updateCourse(id: string, data: any): Promise<Course> {
+    const existingCourse = await this.getCourseById(id);
+
+    if (!existingCourse) {
+      throw new NotFoundException(`Course with ID ${id} not found`);
+    }
+
+    const formattedSubjects = data.subjects.map((subject: any) => ({
+      id: subject.id || undefined, // Retain existing ID or allow creation
+      category: subject.category,
+      topics: { set: subject.topics },
+    }));
+
+    const formattedWorks = data.works.map((work: any) => ({
+      id: work.id || undefined, // Retain existing ID or allow creation
+      title: work.title,
+      url: work.url,
+    }));
+
     return this.prisma.course.update({
       where: { id },
       data: {
-        ...data,
-        price: data.price,
-        subjects: data.subjects,
-        works: data.works,
+        title: data.title,
+        description: data.description,
+        cover: data.cover,
+        link: data.link,
+        type: data.type,
+        price: {
+          update: {
+            original: data.price.original,
+            discounted: data.price.discounted,
+          },
+        },
+        subjects: {
+          deleteMany: {}, // Clear existing subjects
+          create: formattedSubjects, // Re-add updated subjects
+        },
+        works: {
+          deleteMany: {}, // Clear existing works
+          create: formattedWorks, // Re-add updated works
+        },
       },
       include: {
         price: true,
