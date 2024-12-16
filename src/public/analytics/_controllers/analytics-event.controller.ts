@@ -27,7 +27,7 @@ export class AnalyticsEventController {
     return await this.analyticsEventsService.upsertEvent(dto);
   }
 
-  @RuleAccess(RuleAccessEnum.ADMIN)
+  @RuleAccess(RuleAccessEnum.ADMIN, RuleAccessEnum.MODERATOR)
   @UseGuards(AuthGuard, RuleAccessGuard)
   @Get()
   @HttpCode(HttpStatus.OK)
@@ -35,7 +35,7 @@ export class AnalyticsEventController {
     return this.analyticsEventsService.findAll();
   }
 
-  @RuleAccess(RuleAccessEnum.ADMIN)
+  @RuleAccess(RuleAccessEnum.ADMIN, RuleAccessEnum.MODERATOR)
   @UseGuards(AuthGuard, RuleAccessGuard)
   @Get('application/:application')
   @HttpCode(HttpStatus.OK)
