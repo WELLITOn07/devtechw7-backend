@@ -6,6 +6,7 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { AuthService } from './auth.service';
 import { AuthGuard } from './_guards/auth.guard';
 import { AccessRuleModule } from '../access-rule/access-rule.module';
+import { AnalyticsEventModule } from '../analytics/analytics-event.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AccessRuleModule } from '../access-rule/access-rule.module';
     }),
     forwardRef(() => UserModule),
     forwardRef(() => AccessRuleModule),
+    forwardRef(() => AnalyticsEventModule),
     PrismaModule,
   ],
   controllers: [AuthController],

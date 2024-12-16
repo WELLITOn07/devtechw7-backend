@@ -83,3 +83,16 @@ model Work {
 
   @@schema("course")
 }
+
+model AnalyticsEvent {
+  id            Int       @id @default(autoincrement())
+  application   String   
+  eventType     String
+  eventName     String   
+  quantity      Int       @default(1) 
+  createdAt     DateTime  @default(now()) 
+  updatedAt     DateTime  @updatedAt 
+
+  @@unique([application, eventType, eventName]) 
+  @@schema("public")
+}
