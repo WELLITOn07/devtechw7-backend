@@ -28,18 +28,6 @@ model AccessRule {
 
   @@schema("public")
 }
-
-model Application {
-  id           Int      @id @default(autoincrement())
-  name         String   @unique
-  description  String
-  controllers  String[]
-  allowedRoles String[]
-  createdAt    DateTime @default(now())
-
-  @@schema("public")
-}
-
 model Course {
   id          String    @id @default(uuid())
   title       String
@@ -94,5 +82,42 @@ model AnalyticsEvent {
   updatedAt     DateTime  @updatedAt 
 
   @@unique([application, eventType, eventName]) 
+  @@schema("public")
+}
+
+model Application {
+  id           Int      @id @default(autoincrement())
+  name         String   @unique
+  description  String
+  controllers  String[]
+  allowedRoles String[]
+  createdAt    DateTime @default(now())
+  subscriptions Subscription[]
+  advertisements Advertisement[]
+
+  @@schema("public")
+}
+
+model Subscription {
+  id            Int           @id @default(autoincrement())
+  email         String
+  application   Application    @relation(fields: [applicationId], references: [id])
+  applicationId Int
+  createdAt     DateTime       @default(now())
+
+  @@unique([email, applicationId]) 
+  @@schema("public")
+}
+
+model Advertisement {
+  id            Int           @id @default(autoincrement())
+  title         String
+  description   String
+  link          String
+  image         Bytes          
+  createdAt     DateTime       @default(now())
+  application   Application    @relation(fields: [applicationId], references: [id])
+  applicationId Int
+
   @@schema("public")
 }

@@ -9,6 +9,7 @@ import { AppController } from './app.controller';
 import { AccessRuleModule } from './public/access-rule/access-rule.module';
 import { ApplicationModule } from './public/applications/application.module';
 import { AnalyticsEventModule } from './public/analytics/analytics-event.module';
+import { AdvertisingModule } from './public/advertising/advertising.module';
 
 @Module({
   imports: [
@@ -31,7 +32,8 @@ import { AnalyticsEventModule } from './public/analytics/analytics-event.module'
     BiomedsandraApiModule,
     AccessRuleModule,
     ApplicationModule,
-    AnalyticsEventModule
+    AnalyticsEventModule,
+    AdvertisingModule,
   ],
   controllers: [AppController],
   providers: [
