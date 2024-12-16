@@ -58,4 +58,12 @@ export class AnalyticsEventController {
       eventName,
     );
   }
+
+  @RuleAccess(RuleAccessEnum.ADMIN)
+  @UseGuards(AuthGuard, RuleAccessGuard)
+  @Delete('all')
+  @HttpCode(HttpStatus.OK)
+  async deleteAllEvents() {
+    return this.analyticsEventsService.deleteAllEvents();
+  }
 }
