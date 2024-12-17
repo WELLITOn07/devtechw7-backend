@@ -4,9 +4,15 @@ import { AdvertisementController } from './advertisement/_controllers/ advertise
 import { AdvertisementService } from './advertisement/_services/advertisement.service';
 import { SubscriptionController } from './subscription/_controllers/subscription.controller';
 import { SubscriptionService } from './subscription/_services/subscription.service';
+import { EmailModule } from '../_services/email/email.module';
 
 @Module({
+  imports: [EmailModule],
   controllers: [SubscriptionController, AdvertisementController],
-  providers: [PrismaService, SubscriptionService, AdvertisementService],
+  providers: [
+    PrismaService,
+    SubscriptionService,
+    AdvertisementService,
+  ],
 })
 export class AdvertisingModule {}

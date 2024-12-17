@@ -3,12 +3,15 @@ import { ConfigModule } from '@nestjs/config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { BiomedsandraApiModule } from './biomedsandra-api/biomedsandra-api.module';
+import { join } from 'path';
 import { UserModule } from './public/user/user.module';
 import { AuthModule } from './public/auth/auth.module';
 import { AppController } from './app.controller';
 import { AccessRuleModule } from './public/access-rule/access-rule.module';
 import { ApplicationModule } from './public/applications/application.module';
 import { AnalyticsEventModule } from './public/analytics/analytics-event.module';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { MailerModule } from '@nestjs-modules/mailer';
 import { AdvertisingModule } from './public/advertising/advertising.module';
 
 @Module({
@@ -27,6 +30,24 @@ import { AdvertisingModule } from './public/advertising/advertising.module';
         ignoreUserAgents: [/Googlebot/],
       },
     ]),
+    MailerModule.forRoot({
+      transport: {
+        host: 'localhost',
+        port: 1025,
+        ignoreTLS: true,
+        secure: false,
+      },
+      defaults: {
+        from: '"No Reply" <noreply@example.com>',
+      },
+      template: {
+        dir: join(__dirname, 'templates'),
+        adapter: new HandlebarsAdapter(),
+        options: {
+          strict: true,
+        },
+      },
+    }),
     AuthModule,
     UserModule,
     BiomedsandraApiModule,

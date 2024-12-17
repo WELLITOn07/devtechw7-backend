@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateAdvertisementDto } from '../_dto/create-advertisement.dto';
-
-
 @Injectable()
 export class AdvertisementService {
   constructor(private readonly prisma: PrismaService) {}

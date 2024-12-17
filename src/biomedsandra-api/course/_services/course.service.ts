@@ -117,7 +117,7 @@ export class CourseService {
     });
   }
 
-  async deleteCourse(id: string): Promise<Boolean> {
+  async deleteCourse(id: string): Promise<boolean> {
     try {
       const course = await this.prisma.course.findUnique({
         where: { id },
