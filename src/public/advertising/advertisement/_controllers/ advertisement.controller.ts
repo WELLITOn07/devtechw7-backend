@@ -45,6 +45,7 @@ export class AdvertisementController {
   }
 
   @RuleAccess(RuleAccessEnum.ADMIN, RuleAccessEnum.MODERATOR)
+  @UseGuards(AuthGuard, RuleAccessGuard)
   @Get()
   async findAll() {
     try {
@@ -62,6 +63,7 @@ export class AdvertisementController {
   }
 
   @RuleAccess(RuleAccessEnum.ADMIN, RuleAccessEnum.MODERATOR)
+  @UseGuards(AuthGuard, RuleAccessGuard)
   @Get(':id')
   async findOne(@ParamNumberId('id') id: number) {
     try {
