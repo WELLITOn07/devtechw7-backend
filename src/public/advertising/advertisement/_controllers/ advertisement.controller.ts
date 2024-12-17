@@ -21,7 +21,7 @@ export class AdvertisementController {
     return this.advertisementService.findByApplication(applicationId);
   }
 
-  @Post('send/:id')
+  @Post('send')
   async sendWelcome(@Body('to') to: string) {
     await this.emailService.sendWelcomeEmail(to);
     return 'E-mail enviado com sucesso!';

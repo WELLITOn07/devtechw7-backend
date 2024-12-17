@@ -32,13 +32,16 @@ import { AdvertisingModule } from './public/advertising/advertising.module';
     ]),
     MailerModule.forRoot({
       transport: {
-        host: 'localhost',
-        port: 1025,
-        ignoreTLS: true,
+        host: 'smtp.sendgrid.net',
+        port: 587,
         secure: false,
+        auth: {
+          user: 'apikey',
+          pass: process.env.SENDGRID_API_KEY,
+        },
       },
       defaults: {
-        from: '"No Reply" <noreply@example.com>',
+        from: `"No Reply" <${process.env.BIOMEDSANDRA_EMAIL}>`,
       },
       template: {
         dir: join(__dirname, 'templates'),
