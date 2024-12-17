@@ -1,6 +1,55 @@
 <html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        color: #333;
+        margin: 0;
+        padding: 0;
+        background: #f9f9f9;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      }
+
+      h1 {
+        color: #305b8f;
+      }
+
+      p {
+        line-height: 1.6;
+      }
+
+      .highlight {
+        color: #305b8f;
+        font-weight: bold;
+      }
+
+      .footer {
+        margin-top: 30px;
+        font-size: 0.9em;
+        color: #777;
+      }
+    </style>
+  </head>
   <body>
-    <h1>Bem-vindo(a), {{name}}!</h1>
-    <p>Estamos felizes em tê-lo(a) conosco.</p>
+    <div class="container">
+      <h1>Bem-vindo(a), {{name}}!</h1>
+      <p>É um grande prazer recebê-lo(a) na <span class="highlight">BiomedSandra</span>, o seu novo espaço para adquirir conhecimentos valiosos na área de Biomedicina.</p>
+      <p>Aqui você encontrará uma ampla variedade de cursos e e-books cuidadosamente preparados por profissionais experientes, garantindo que você esteja sempre atualizado(a) com as melhores práticas do setor.</p>
+      <p>Fique de olho em nossas novidades, promoções exclusivas e conteúdos especiais que enviaremos diretamente para você. Aproveite a oportunidade para expandir seu conhecimento, impulsionar sua carreira e compartilhar esse momento com colegas e amigos.</p>
+      <p>Obrigado(a) por confiar em nós. Em breve você receberá informações imperdíveis para alavancar ainda mais o seu sucesso!</p>
+      <div class="footer">
+        Atenciosamente,<br/>
+        Equipe BiomedSandra
+      </div>
+    </div>
   </body>
 </html>
