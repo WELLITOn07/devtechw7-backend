@@ -41,7 +41,7 @@ import { AdvertisingModule } from './public/advertising/advertising.module';
         },
       },
       defaults: {
-        from: `"No Reply" <${process.env.BIOMEDSANDRA_EMAIL}>`,
+        from: `<${process.env.BIOMEDSANDRA_EMAIL}>`,
       },
       template: {
         dir: join(__dirname, 'templates'),

@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { PrismaClient } from '@prisma/client';
 import { ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from './public/_filters/http-exception.filter';
+import bodyParser from 'body-parser';
 
 async function bootstrap() {
   const prisma = new PrismaClient();
@@ -41,7 +42,10 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new HttpExceptionFilter());
+  app.use(bodyParser.json({ limit: '10mb' }));
+  app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 
   await app.listen(3000, '0.0.0.0');
 }
 bootstrap();
+

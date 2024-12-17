@@ -1,5 +1,3 @@
-// subscription.service.ts
-
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateSubscriptionDto } from '../_dto/create-subscription.dto';
@@ -7,33 +5,35 @@ import { CreateSubscriptionDto } from '../_dto/create-subscription.dto';
 @Injectable()
 export class SubscriptionService {
   constructor(private readonly prisma: PrismaService) {}
-
   async create(dto: CreateSubscriptionDto) {
-    const existing = await this.prisma.subscription.findUnique({
-      where: {
-        email_applicationId: {
-          email: dto.email,
-          applicationId: dto.applicationId,
-        },
-      },
+    const { email, applicationIds } = dto;
+
+    const existingSubscription = await this.prisma.subscription.findUnique({
+      where: { email },
     });
 
-    if (existing) {
-      return existing;
+    if (existingSubscription) {
+      const updatedApplicationIds = Array.from(
+        new Set([...existingSubscription.applicationIds, ...applicationIds]),
+      );
+
+      return this.prisma.subscription.update({
+        where: { email },
+        data: { applicationIds: updatedApplicationIds },
+      });
     }
 
     return this.prisma.subscription.create({
       data: {
-        email: dto.email,
-        applicationId: dto.applicationId,
+        email,
+        applicationIds,
       },
     });
   }
 
+
   async findAll() {
-    return this.prisma.subscription.findMany({
-      include: { application: true },
-    });
+    return this.prisma.subscription.findMany();
   }
 
   async remove(id: number) {
@@ -43,9 +43,16 @@ export class SubscriptionService {
   }
 
   async findEmailsByApplication(applicationId: number) {
-    const subs = await this.prisma.subscription.findMany({
-      where: { applicationId },
+    const subscriptions = await this.prisma.subscription.findMany({
+      where: { applicationIds: { has: applicationId } },
     });
-    return subs.map((s) => s.email);
+
+    return subscriptions.map((sub) => sub.email);
+  }
+
+  async findByEmail(email: string) {
+    return this.prisma.subscription.findUnique({
+      where: { email },
+    });
   }
 }

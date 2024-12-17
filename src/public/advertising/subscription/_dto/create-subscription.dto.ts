@@ -1,9 +1,11 @@
-import { IsEmail, IsInt } from 'class-validator';
+import { IsEmail, IsArray, ArrayNotEmpty, IsInt } from 'class-validator';
 
 export class CreateSubscriptionDto {
   @IsEmail()
   email: string;
 
-  @IsInt()
-  applicationId: number;
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsInt({ each: true })
+  applicationIds: number[];
 }
