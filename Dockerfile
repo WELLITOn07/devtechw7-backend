@@ -1,13 +1,12 @@
 # Etapa 1: Construção
-FROM node:18-alpine3.16 AS builder
-
-# Alterar repositórios para evitar problemas de rede
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirror.leaseweb.com/g' /etc/apk/repositories
-
-# Instalar dependências do sistema
-RUN apk add --no-cache openssl bash
+FROM node:18-slim AS builder
 
 WORKDIR /app
+
+# Instalar dependências do sistema necessárias
+RUN apt-get update && apt-get install -y \
+    python3 make g++ openssl && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copiar dependências
 COPY package.json package-lock.json ./
@@ -23,17 +22,14 @@ RUN npx prisma generate --schema=/app/prisma/schema.prisma
 RUN npm run build
 
 # Etapa 2: Produção
-FROM node:18-alpine3.16 AS production
-
-# Alterar repositórios para evitar problemas de rede
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirror.leaseweb.com/g' /etc/apk/repositories
-
-# Instalar dependências do sistema
-RUN apk add --no-cache openssl bash
+FROM node:18-slim AS production
 
 WORKDIR /app
 
 # Instalar dependências de produção
+RUN apt-get update && apt-get install -y openssl && \
+    rm -rf /var/lib/apt/lists/*
+
 COPY package.json package-lock.json ./
 RUN npm install --production --quiet --no-optional --no-fund --loglevel=error
 
@@ -49,7 +45,7 @@ COPY .env.production .env
 EXPOSE 3000
 
 # Definir ambiente
-ENV NODE_ENV production
+ENV NODE_ENV=production
 
 # Iniciar aplicação
-CMD ["npm", "run", "prod"]
+CMD ["node", "dist/main"]
