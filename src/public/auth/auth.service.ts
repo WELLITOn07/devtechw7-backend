@@ -52,7 +52,7 @@ export class AuthService {
     return bcrypt.hashSync(password, 5);
   }
 
-  private decryptPassword(hash: string, password: string): boolean {
+  private decryptPassword(password: string, hash: string): boolean {
     return bcrypt.compareSync(password, hash);
   }
 
@@ -61,7 +61,7 @@ export class AuthService {
     password: string,
     urlOrigin: string,
   ): Promise<{ access_token: string; user: any }> {
-    const user = await this.prismaService.user.findFirst({
+    const user = await this.prismaService.user.findUnique({
       where: { email },
       select: {
         id: true,
@@ -72,13 +72,8 @@ export class AuthService {
       },
     });
 
-    if (!user) {
-      throw new UnauthorizedException('Email or password incorrect');
-    }
-
-    const isValidPassword = this.decryptPassword(user.password, password);
-    if (!isValidPassword) {
-      throw new UnauthorizedException('Email or password incorrect');
+    if (!user || !this.decryptPassword(password, user.password)) {
+      throw new UnauthorizedException('Invalid email or password');
     }
 
     await this.accessRuleService.validateAccess(urlOrigin, user.id);
@@ -91,6 +86,7 @@ export class AuthService {
     });
 
     const { password: _, ...userWithoutPassword } = user;
+
     return { access_token: token.access_token, user: userWithoutPassword };
   }
 
