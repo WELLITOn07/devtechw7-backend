@@ -79,7 +79,7 @@ export class SubscriptionController {
   }
 
   @UseGuards(AuthGuard, RuleAccessGuard)
-  @RuleAccess(RuleAccessEnum.ADMIN)
+  @RuleAccess(RuleAccessEnum.ADMIN, RuleAccessEnum.MODERATOR)
   @Delete(':id')
   async remove(@Param('id') id: number) {
     try {

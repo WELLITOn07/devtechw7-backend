@@ -48,4 +48,4 @@ EXPOSE 3000
 ENV NODE_ENV=production
 
 # Iniciar aplicação
-CMD ["node", "dist/main"]
+CMD ["node", "npm run prod"]
