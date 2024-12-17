@@ -7,6 +7,7 @@ import { AuthService } from './auth.service';
 import { AuthGuard } from './_guards/auth.guard';
 import { AccessRuleModule } from '../access-rule/access-rule.module';
 import { AnalyticsEventModule } from '../analytics/analytics-event.module';
+import { AdvertisingModule } from '../advertising/advertising.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { AnalyticsEventModule } from '../analytics/analytics-event.module';
     forwardRef(() => UserModule),
     forwardRef(() => AccessRuleModule),
     forwardRef(() => AnalyticsEventModule),
+    forwardRef(() => AdvertisingModule),
     PrismaModule,
   ],
   controllers: [AuthController],

@@ -13,7 +13,7 @@ import { AccessRuleService } from '../access-rule/_services/access-rule.service'
 @Injectable()
 export class AuthService {
   constructor(
-    private jwtService: JwtService,
+    private readonly jwtService: JwtService,
     private readonly prismaService: PrismaService,
     private readonly accessRuleService: AccessRuleService,
   ) {}
@@ -76,7 +76,7 @@ export class AuthService {
       throw new UnauthorizedException('Email or password incorrect');
     }
 
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    const isValidPassword = this.decryptPassword(user.password, password);
     if (!isValidPassword) {
       throw new UnauthorizedException('Email or password incorrect');
     }

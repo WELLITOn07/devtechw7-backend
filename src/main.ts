@@ -8,7 +8,9 @@ import bodyParser from 'body-parser';
 async function bootstrap() {
   const prisma = new PrismaClient();
   await prisma.$connect();
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: ['error', 'warn', 'log', 'debug'],
+  });
 
   app.enableCors({
     origin: (origin, callback) => {
