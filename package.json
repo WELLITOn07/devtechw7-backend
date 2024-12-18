@@ -19,6 +19,8 @@
     "docker-compose": "docker compose up --build --force-recreate"
   },
   "dependencies": {
+    "@css-inline/css-inline": "^0.14.3",
+    "@css-inline/css-inline-linux-x64-gnu": "^0.14.3",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.2.3",

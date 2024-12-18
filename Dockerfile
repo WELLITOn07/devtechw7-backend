@@ -5,12 +5,14 @@ WORKDIR /app
 
 # Instalar dependências do sistema necessárias
 RUN apt-get update && apt-get install -y \
-    python3 make g++ openssl && \
+    python3 make g++ openssl libssl3 ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
 # Copiar dependências
 COPY package.json package-lock.json ./
-RUN npm install --quiet --no-optional --no-fund --loglevel=error
+
+# Instalar dependências
+RUN npm install --legacy-peer-deps --quiet --no-optional --no-fund --loglevel=error
 
 # Copiar código-fonte
 COPY . .
@@ -26,20 +28,18 @@ FROM node:18-slim AS production
 
 WORKDIR /app
 
-# Instalar dependências de produção
-RUN apt-get update && apt-get install -y openssl && \
+# Instalar dependências do sistema necessárias
+RUN apt-get update && apt-get install -y \
+    libssl3 ca-certificates && \
     rm -rf /var/lib/apt/lists/*
-
-COPY package.json package-lock.json ./
-RUN npm install --production --quiet --no-optional --no-fund --loglevel=error
-
-# Copiar artefatos do build
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/prisma ./prisma
 
 # Variáveis de ambiente
 COPY .env.production .env
+
+# Copiar apenas os arquivos necessários do estágio builder
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
 
 # Expor porta
 EXPOSE 3000
@@ -48,4 +48,4 @@ EXPOSE 3000
 ENV NODE_ENV=production
 
 # Iniciar aplicação
-CMD ["node", "npm run prod"]
+CMD ["node", "dist/main"]
