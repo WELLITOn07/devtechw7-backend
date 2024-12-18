@@ -19,10 +19,95 @@ import { RuleAccessGuard } from 'src/public/auth/_guards/rule-access.guard';
 import { RuleAccess } from 'src/public/_decorators/rule-access.decorator';
 import { RuleAccessEnum } from 'src/public/_enums/rule-access.enum';
 import { UpdateAdvertisementDto } from '../_dto/update-advertisement.dto';
+import { EmailService } from 'src/public/_services/email/email.service';
+import { SubscriptionService } from '../../subscription/_services/subscription.service';
 
 @Controller('advertisements')
 export class AdvertisementController {
-  constructor(private readonly advertisementService: AdvertisementService) {}
+  constructor(
+    private readonly advertisementService: AdvertisementService,
+    private readonly emailService: EmailService,
+    private readonly subscriptionService: SubscriptionService,
+  ) {}
+
+  @RuleAccess(RuleAccessEnum.ADMIN, RuleAccessEnum.MODERATOR)
+  @UseGuards(AuthGuard, RuleAccessGuard)
+  @Post('send/test')
+  @HttpCode(HttpStatus.OK)
+  async sendAdvertisementToSingle(
+    @Body('email') recipientEmail: string,
+    @Body('advertisementId') advertisementId: number,
+  ) {
+    try {
+      const ad = await this.advertisementService.findOne(advertisementId);
+
+      if (!ad) {
+        throw new NotFoundException(
+          `Advertisement with ID ${advertisementId} not found`,
+        );
+      }
+
+      await this.emailService.sendAdvertisementEmail(recipientEmail, {
+        title: ad.title,
+        description: ad.description,
+        link: ad.link,
+        image: ad.image,
+      });
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: `Advertisement sent successfully to ${recipientEmail}.`,
+      };
+    } catch (error) {
+      throw new HttpException(
+        `Failed to send advertisement: ${error.message}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  @RuleAccess(RuleAccessEnum.ADMIN, RuleAccessEnum.MODERATOR)
+  @UseGuards(AuthGuard, RuleAccessGuard)
+  @Post('send/:id')
+  @HttpCode(HttpStatus.OK)
+  async sendAdvertisement(
+    @ParamNumberId() id: number,
+    @Body('advertisementId') advertisementId: number,
+  ) {
+    try {
+      const emails = await this.subscriptionService.findEmailsByApplication(id);
+
+      const ad = await this.advertisementService.findOne(advertisementId);
+
+      if (!ad) {
+        throw new NotFoundException(
+          `Advertisement with ID ${advertisementId} not found`,
+        );
+      }
+
+      await Promise.all(
+        emails.map((email) =>
+          this.emailService.sendAdvertisementEmail(email, {
+            title: ad.title,
+            description: ad.description,
+            link: ad.link,
+            image: ad.image,
+          }),
+        ),
+      );
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Advertisement sent successfully to all subscriptions.',
+      };
+    } catch (error) {
+      throw new HttpException(
+        `Failed to send advertisement: ${error.message}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
   @RuleAccess(RuleAccessEnum.ADMIN, RuleAccessEnum.MODERATOR)
   @UseGuards(AuthGuard, RuleAccessGuard)
   @Post()
@@ -126,6 +211,24 @@ export class AdvertisementController {
     } catch (error) {
       throw new HttpException(
         `Failed to delete advertisement: ${error.message}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  @Post('send/welcome')
+  @HttpCode(HttpStatus.OK)
+  async sendWelcomeEmail(@Body('email') recipientEmail: string) {
+    try {
+      await this.emailService.sendWelcomeEmail(recipientEmail);
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: `Welcome email sent successfully to ${recipientEmail}.`,
+      };
+    } catch (error) {
+      throw new HttpException(
+        `Failed to send welcome email: ${error.message}`,
         HttpStatus.BAD_REQUEST,
       );
     }
