@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateAdvertisementDto } from '../_dto/create-advertisement.dto';
+import { UpdateAdvertisementDto } from '../_dto/update-advertisement.dto';
 
 @Injectable()
 export class AdvertisementService {
   constructor(private readonly prisma: PrismaService) {}
-
   async create(dto: CreateAdvertisementDto) {
     return this.prisma.advertisement.create({
       data: {
@@ -25,14 +25,26 @@ export class AdvertisementService {
     }));
   }
 
-  async findOne(advertisementId: number | string) {
-    const id = Number(advertisementId);
-    const ad = await this.prisma.advertisement.findUnique({ where: { id } });
+  async findOne(id: number) {
+    const ad = await this.prisma.advertisement.findUnique({
+      where: { id },
+    });
     if (!ad) throw new Error('Advertisement not found');
-    return { ...ad, image: ad.image ? ad.image.toString('base64') : null };
+    return {
+      ...ad,
+      image: ad.image ? ad.image.toString('base64') : null,
+    };
   }
 
-  async update(id: number, dto: CreateAdvertisementDto) {
+  async update(id: number, dto: UpdateAdvertisementDto) {
+    const existingAd = await this.prisma.advertisement.findUnique({
+      where: { id },
+    });
+
+    if (!existingAd) {
+      throw new NotFoundException(`Advertisement with ID ${id} not found.`);
+    }
+
     return this.prisma.advertisement.update({
       where: { id },
       data: {
@@ -45,6 +57,8 @@ export class AdvertisementService {
   }
 
   async delete(id: number) {
-    await this.prisma.advertisement.delete({ where: { id } });
+    await this.prisma.advertisement.delete({
+      where: { id },
+    });
   }
 }

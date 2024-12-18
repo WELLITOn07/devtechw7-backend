@@ -15,7 +15,4 @@ export class CreateAdvertisementDto {
 
   @IsBase64()
   image: string;
-
-  @IsInt()
-  applicationId: number;
 }
