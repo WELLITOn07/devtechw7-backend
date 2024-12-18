@@ -6,6 +6,7 @@ import {
   Param,
   Delete,
   Query,
+  HttpCode,
   HttpStatus,
   NotFoundException,
   UseGuards,
@@ -24,6 +25,7 @@ export class SubscriptionController {
   @UseGuards(AuthGuard, RuleAccessGuard)
   @RuleAccess(RuleAccessEnum.ADMIN, RuleAccessEnum.MODERATOR)
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   async create(@Body() createSubscriptionDto: CreateSubscriptionDto) {
     try {
       const subscription = await this.subscriptionService.create(
@@ -44,6 +46,7 @@ export class SubscriptionController {
   @UseGuards(AuthGuard, RuleAccessGuard)
   @RuleAccess(RuleAccessEnum.ADMIN, RuleAccessEnum.MODERATOR)
   @Get()
+  @HttpCode(HttpStatus.OK)
   async findAll() {
     try {
       const subscriptions = await this.subscriptionService.findAll();
@@ -62,6 +65,7 @@ export class SubscriptionController {
   @UseGuards(AuthGuard, RuleAccessGuard)
   @RuleAccess(RuleAccessEnum.ADMIN, RuleAccessEnum.MODERATOR)
   @Get('application/:id')
+  @HttpCode(HttpStatus.OK)
   async findByApplication(@Param('id') applicationId: number) {
     try {
       const emails =
@@ -81,17 +85,13 @@ export class SubscriptionController {
   @UseGuards(AuthGuard, RuleAccessGuard)
   @RuleAccess(RuleAccessEnum.ADMIN, RuleAccessEnum.MODERATOR)
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: number) {
     try {
       const deletedSubscription = await this.subscriptionService.remove(id);
       if (!deletedSubscription) {
         throw new NotFoundException(`Subscription with ID ${id} not found`);
       }
-
-      return {
-        statusCode: HttpStatus.OK,
-        message: `Subscription with ID ${id} was successfully deleted`,
-      };
     } catch (error) {
       throw new NotFoundException(
         `Failed to delete subscription: ${error.message}`,
@@ -102,6 +102,7 @@ export class SubscriptionController {
   @UseGuards(AuthGuard, RuleAccessGuard)
   @RuleAccess(RuleAccessEnum.ADMIN, RuleAccessEnum.MODERATOR)
   @Get('email')
+  @HttpCode(HttpStatus.OK)
   async findByEmail(@Query('email') email: string) {
     try {
       const subscription = await this.subscriptionService.findByEmail(email);
@@ -122,3 +123,4 @@ export class SubscriptionController {
     }
   }
 }
+

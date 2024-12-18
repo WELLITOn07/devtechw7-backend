@@ -5,6 +5,7 @@ import {
   Get,
   UseGuards,
   HttpException,
+  HttpCode,
   HttpStatus,
   NotFoundException,
   Put,
@@ -25,6 +26,7 @@ export class AdvertisementController {
   @RuleAccess(RuleAccessEnum.ADMIN, RuleAccessEnum.MODERATOR)
   @UseGuards(AuthGuard, RuleAccessGuard)
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   async create(@Body() createAdvertisementDto: CreateAdvertisementDto) {
     try {
       const ad = await this.advertisementService.create(createAdvertisementDto);
@@ -44,6 +46,7 @@ export class AdvertisementController {
   @RuleAccess(RuleAccessEnum.ADMIN, RuleAccessEnum.MODERATOR)
   @UseGuards(AuthGuard, RuleAccessGuard)
   @Get()
+  @HttpCode(HttpStatus.OK)
   async findAll() {
     try {
       const ads = await this.advertisementService.findAll();
@@ -63,6 +66,7 @@ export class AdvertisementController {
   @RuleAccess(RuleAccessEnum.ADMIN, RuleAccessEnum.MODERATOR)
   @UseGuards(AuthGuard, RuleAccessGuard)
   @Get(':id')
+  @HttpCode(HttpStatus.OK)
   async findOne(@ParamNumberId() id: number) {
     try {
       const ad = await this.advertisementService.findOne(id);
@@ -84,7 +88,8 @@ export class AdvertisementController {
 
   @RuleAccess(RuleAccessEnum.ADMIN, RuleAccessEnum.MODERATOR)
   @UseGuards(AuthGuard, RuleAccessGuard)
-  @Put(':id') 
+  @Put(':id')
+  @HttpCode(HttpStatus.OK)
   async update(
     @ParamNumberId() id: number,
     @Body() updateAdvertisementDto: UpdateAdvertisementDto,
@@ -110,6 +115,7 @@ export class AdvertisementController {
   @RuleAccess(RuleAccessEnum.ADMIN, RuleAccessEnum.MODERATOR)
   @UseGuards(AuthGuard, RuleAccessGuard)
   @Delete(':id')
+  @HttpCode(HttpStatus.OK)
   async delete(@ParamNumberId() id: number) {
     try {
       await this.advertisementService.delete(id);
