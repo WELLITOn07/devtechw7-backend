@@ -33,7 +33,7 @@ export class UserService {
     }
 
     if (data.password) {
-      data.password = this.authService.encryptPassword(String(data.password));
+      data.password = await this.authService.encryptPassword(String(data.password));
     }
 
     return this.prisma.user.update({

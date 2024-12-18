@@ -3,16 +3,19 @@ import { AppModule } from './app.module';
 import { PrismaClient } from '@prisma/client';
 import { ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from './public/_filters/http-exception.filter';
+import bodyParser from 'body-parser';
 
 async function bootstrap() {
   const prisma = new PrismaClient();
   await prisma.$connect();
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: ['error', 'warn', 'log', 'debug'],
+  });
 
   app.enableCors({
     origin: (origin, callback) => {
       const allowedOriginsProd = [
-        'https://devtechw7-dashboard-1f09b.web.app',
+        'https://devtechw7-dashboard-9a030.web.app',
         'https://biomedsandra.com.br',
       ];
       const allowedOriginsDev = [
@@ -41,7 +44,10 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new HttpExceptionFilter());
+  app.use(bodyParser.json({ limit: '10mb' }));
+  app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 
   await app.listen(3000, '0.0.0.0');
 }
 bootstrap();
+

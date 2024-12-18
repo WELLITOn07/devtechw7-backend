@@ -36,7 +36,7 @@ export class AnalyticsEventService {
           data: { application, eventType, eventName, quantity },
         });
         return {
-          message: 'Event created successfully.'
+          message: 'Event created successfully.',
         };
       }
     } catch (error) {
@@ -84,5 +84,14 @@ export class AnalyticsEventService {
     });
 
     return { message: 'Event deleted successfully.' };
+  }
+
+  async deleteAllEvents() {
+    try {
+      await this.prisma.analyticsEvent.deleteMany({});
+      return { message: 'All events deleted successfully.' };
+    } catch (error) {
+      throw new BadRequestException('Error deleting all events.');
+    }
   }
 }
