@@ -15,7 +15,7 @@ async function bootstrap() {
   app.enableCors({
     origin: (origin, callback) => {
       const allowedOriginsProd = [
-        'https://devtechw7-dashboard-c428e.web.app',
+        'https://devtechw7-dashboard-9a030.web.app',
         'https://biomedsandra.com.br',
       ];
       const allowedOriginsDev = [
