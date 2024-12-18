@@ -216,7 +216,7 @@ export class AdvertisementController {
     }
   }
 
-  @Post('send/welcome')
+  @Post('/welcome')
   @HttpCode(HttpStatus.OK)
   async sendWelcomeEmail(@Body('email') recipientEmail: string) {
     try {
