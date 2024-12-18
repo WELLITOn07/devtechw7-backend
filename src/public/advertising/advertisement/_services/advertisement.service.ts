@@ -6,7 +6,6 @@ import { CreateAdvertisementDto } from '../_dto/create-advertisement.dto';
 export class AdvertisementService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // Criação de um anúncio
   async create(dto: CreateAdvertisementDto) {
     return this.prisma.advertisement.create({
       data: {
@@ -18,7 +17,6 @@ export class AdvertisementService {
     });
   }
 
-  // Buscar todos os anúncios
   async findAll() {
     const advertisements = await this.prisma.advertisement.findMany();
     return advertisements.map((ad) => ({
@@ -27,21 +25,26 @@ export class AdvertisementService {
     }));
   }
 
-  // Buscar um anúncio específico pelo ID
   async findOne(advertisementId: number | string) {
-    const id = Number(advertisementId); // Garantir que seja um número
+    const id = Number(advertisementId);
+    const ad = await this.prisma.advertisement.findUnique({ where: { id } });
+    if (!ad) throw new Error('Advertisement not found');
+    return { ...ad, image: ad.image ? ad.image.toString('base64') : null };
+  }
 
-    const ad = await this.prisma.advertisement.findUnique({
+  async update(id: number, dto: CreateAdvertisementDto) {
+    return this.prisma.advertisement.update({
       where: { id },
+      data: {
+        title: dto.title,
+        description: dto.description,
+        link: dto.link,
+        image: dto.image ? Buffer.from(dto.image, 'base64') : undefined,
+      },
     });
+  }
 
-    if (!ad) {
-      throw new Error('Advertisement not found');
-    }
-
-    return {
-      ...ad,
-      image: ad.image ? ad.image.toString('base64') : null,
-    };
+  async delete(id: number) {
+    await this.prisma.advertisement.delete({ where: { id } });
   }
 }
