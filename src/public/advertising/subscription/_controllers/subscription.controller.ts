@@ -22,8 +22,6 @@ import { RuleAccessEnum } from 'src/public/_enums/rule-access.enum';
 export class SubscriptionController {
   constructor(private readonly subscriptionService: SubscriptionService) {}
 
-  @UseGuards(AuthGuard, RuleAccessGuard)
-  @RuleAccess(RuleAccessEnum.ADMIN, RuleAccessEnum.MODERATOR)
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createSubscriptionDto: CreateSubscriptionDto) {
