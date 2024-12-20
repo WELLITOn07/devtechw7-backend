@@ -1,0 +1,69 @@
+name: Build, Test, and Deploy
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout do código
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    # Configuração do Node.js
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+        cache: 'npm'
+
+    # Instalar dependências
+    - name: Install Dependencies
+      run: npm install
+
+    # Rodar testes com Jest
+    - name: Run Tests
+      run: npm run test
+
+    # Construir o projeto
+    - name: Build Project
+      run: npm run build
+
+  docker-build-and-deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout do código
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    # Login no DockerHub
+    - name: Log in to DockerHub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    # Construir imagem Docker
+    - name: Build Docker Image
+      run: docker build -t ${{ secrets.DOCKER_USERNAME }}/devtechw7-backend:latest .
+
+    # Push da imagem Docker
+    - name: Push Docker Image
+      run: docker push ${{ secrets.DOCKER_USERNAME }}/devtechw7-backend:latest
+
+    # Login no Fly.io
+    - name: Login to Fly.io
+      run: flyctl auth token ${{ secrets.FLY_API_TOKEN }}
+
+    # Deploy no Fly.io
+    - name: Deploy to Fly.io
+      run: flyctl deploy --image ${{ secrets.DOCKER_USERNAME }}/devtechw7-backend:latest

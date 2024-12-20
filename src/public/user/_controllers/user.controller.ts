@@ -19,7 +19,6 @@ import { RuleAccess } from 'src/public/_decorators/rule-access.decorator';
 import { RuleAccessEnum } from 'src/public/_enums/rule-access.enum';
 import { RuleAccessGuard } from 'src/public/auth/_guards/rule-access.guard';
 import { ValidateAndTransformUsers } from '../_decorators/validate-and-transform-users.decorator';
-import { userDecorator } from 'src/public/_decorators/user.decorator';
 
 @Controller('user')
 export class UserController {
@@ -103,15 +102,8 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   async updateUser(
     @ParamNumberId() userId: number,
-    @userDecorator('id') currentUserId: number,
     @Body() user: Prisma.UserUpdateInput,
   ): Promise<{ statusCode: number; message: string }> {
-    if (userId !== currentUserId) {
-      throw new ForbiddenException(
-        'You are not authorized to update this user.',
-      );
-    }
-
     try {
       await this.userService.updateUsers(userId, user);
 
@@ -130,13 +122,7 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   async deleteUser(
     @ParamNumberId() id: number,
-    @userDecorator('id') currentUserId: number,
   ): Promise<{ statusCode: number; message: string }> {
-    if (id !== currentUserId) {
-      throw new ForbiddenException(
-        'You are not authorized to delete this user.',
-      );
-    }
 
     try {
       const deletedUser = await this.userService.deleteUser(id);
