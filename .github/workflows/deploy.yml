@@ -1,56 +1,30 @@
-name: CI/CD Workflow
-
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-
 jobs:
   build-and-deploy:
-    name: Build, Test, and Deploy
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout do código-fonte
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Configurar Node.js
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-      # Instalar dependências
-      - name: Install dependencies
-        run: npm install
-
-      # Executar testes
-      - name: Run tests
-        run: npm test
-
-      # Login no Docker Hub
-      - name: Login to Docker Hub
+      - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Construir imagem Docker
-      - name: Build Docker image
-        run: docker build -t welliton07/devtechw7-backend:latest .
+      - name: Create .env.production
+        run: echo "${{ secrets.PRODUCTION_ENV_FILE }}" > .env.production
 
-      # Push da imagem para o Docker Hub
-      - name: Push Docker image to Docker Hub
-        run: docker push welliton07/devtechw7-backend:latest
+      - name: Build and push Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/devtechw7-backend:latest .
+          docker push ${{ secrets.DOCKER_USERNAME }}/devtechw7-backend:latest
 
-      # Login no Fly.io
-      - name: Login to Fly.io
-        run: fly auth token ${{ secrets.FLY_API_TOKEN }}
+      - name: Log in to Fly.io
+        run: flyctl auth token ${{ secrets.FLY_API_TOKEN }}
 
-      # Deploy no Fly.io
       - name: Deploy to Fly.io
-        run: fly deploy --remote-only
+        run: flyctl deploy
