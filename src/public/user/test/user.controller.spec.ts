@@ -146,19 +146,13 @@ describe('UserController', () => {
 
       mockUserService.updateUsers.mockResolvedValue(undefined);
 
-      const result = await controller.updateUser(1, 1, mockUser);
+      const result = await controller.updateUser(1, mockUser);
 
       expect(userService.updateUsers).toHaveBeenCalledWith(1, mockUser);
       expect(result).toEqual({
         statusCode: 200,
         message: 'User with ID 1 updated successfully.',
       });
-    });
-
-    it('should throw ForbiddenException if userId does not match currentUserId', async () => {
-      await expect(controller.updateUser(1, 2, {})).rejects.toThrow(
-        ForbiddenException,
-      );
     });
 
     it('should throw HttpException on update failure', async () => {
@@ -168,7 +162,7 @@ describe('UserController', () => {
         new Error('Database error'),
       );
 
-      await expect(controller.updateUser(1, 1, mockUser)).rejects.toThrow(
+      await expect(controller.updateUser(1, mockUser)).rejects.toThrow(
         HttpException,
       );
     });
@@ -178,7 +172,7 @@ describe('UserController', () => {
     it('should delete a user', async () => {
       mockUserService.deleteUser.mockResolvedValue({ id: 1 });
 
-      const result = await controller.deleteUser(1, 1);
+      const result = await controller.deleteUser(1);
 
       expect(userService.deleteUser).toHaveBeenCalledWith(1);
       expect(result).toEqual({
@@ -187,16 +181,10 @@ describe('UserController', () => {
       });
     });
 
-    it('should throw ForbiddenException if userId does not match currentUserId', async () => {
-      await expect(controller.deleteUser(1, 2)).rejects.toThrow(
-        ForbiddenException,
-      );
-    });
-
     it('should throw NotFoundException if user is not found for deletion', async () => {
       mockUserService.deleteUser.mockResolvedValue(null);
 
-      await expect(controller.deleteUser(1, 1)).rejects.toThrow(
+      await expect(controller.deleteUser(1)).rejects.toThrow(
         NotFoundException,
       );
     });
@@ -204,7 +192,7 @@ describe('UserController', () => {
     it('should throw HttpException on deletion failure', async () => {
       mockUserService.deleteUser.mockRejectedValue(new Error('Database error'));
 
-      await expect(controller.deleteUser(1, 1)).rejects.toThrow(HttpException);
+      await expect(controller.deleteUser(1)).rejects.toThrow(HttpException);
     });
   });
 });

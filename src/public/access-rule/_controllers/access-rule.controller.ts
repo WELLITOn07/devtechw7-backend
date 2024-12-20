@@ -5,11 +5,9 @@ import {
   Put,
   Delete,
   Body,
-  Param,
   HttpCode,
   HttpStatus,
   NotFoundException,
-  ConflictException,
   UseGuards,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -17,7 +15,6 @@ import { RuleAccess } from 'src/public/_decorators/rule-access.decorator';
 import { AuthGuard } from 'src/public/auth/_guards/auth.guard';
 import { RuleAccessGuard } from 'src/public/auth/_guards/rule-access.guard';
 import { RuleAccessEnum } from 'src/public/_enums/rule-access.enum';
-import { CreateAccessRuleDto } from '../_dto/create-access-rule.dto';
 import { UpdateAccessRuleDto } from '../_dto/update-access-rule.dto';
 import { ParamNumberId } from 'src/public/_decorators/param-number-id.decorator';
 import { Prisma } from '@prisma/client';
@@ -41,6 +38,26 @@ export class AccessRuleController {
       statusCode: HttpStatus.OK,
       message: 'Access rules retrieved successfully',
       data: accessRules,
+    };
+  }
+
+  @RuleAccess(RuleAccessEnum.ADMIN, RuleAccessEnum.MODERATOR)
+  @UseGuards(AuthGuard, RuleAccessGuard)
+  @Get(':id')
+  @HttpCode(HttpStatus.OK)
+  async getAccessRuleById(@ParamNumberId() id: number) {
+    const accessRule = await this.prisma.accessRule.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!accessRule) {
+      throw new NotFoundException(`Access rule with ID ${id} not found`);
+    }
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Access rule retrieved successfully',
+      data: accessRule,
     };
   }
 
