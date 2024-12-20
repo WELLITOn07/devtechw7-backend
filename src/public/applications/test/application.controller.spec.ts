@@ -32,11 +32,11 @@ describe('ApplicationController', () => {
   };
 
   const mockAuthGuard = {
-    canActivate: jest.fn(() => true), // Always allow the route for tests
+    canActivate: jest.fn(() => true),
   };
 
   const mockRuleAccessGuard = {
-    canActivate: jest.fn(() => true), // Always allow the route for tests
+    canActivate: jest.fn(() => true),
   };
 
   beforeEach(async () => {
@@ -132,13 +132,15 @@ describe('ApplicationController', () => {
         },
       ];
 
-      mockApplicationService.create.mockRejectedValue(
+      mockApplicationService.upsertBulk.mockRejectedValue(
         new ConflictException('Application already exists'),
       );
 
       await expect(controller.createApplication(createDto)).rejects.toThrow(
         ConflictException,
       );
+
+      expect(applicationService.upsertBulk).toHaveBeenCalledWith(createDto);
     });
   });
 
@@ -211,4 +213,3 @@ describe('ApplicationController', () => {
     });
   });
 });
-
