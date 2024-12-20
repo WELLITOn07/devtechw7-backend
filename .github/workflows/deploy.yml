@@ -1,4 +1,4 @@
-name: Build, Test, and Deploy
+name: CI/CD Workflow
 
 on:
   push:
@@ -9,61 +9,48 @@ on:
       - main
 
 jobs:
-  build-and-test:
+  build-and-deploy:
+    name: Build, Test, and Deploy
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout do código
-    - name: Checkout Code
-      uses: actions/checkout@v3
+      # Checkout do código-fonte
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    # Configuração do Node.js
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 18
-        cache: 'npm'
+      # Configurar Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
 
-    # Instalar dependências
-    - name: Install Dependencies
-      run: npm install
+      # Instalar dependências
+      - name: Install dependencies
+        run: npm install
 
-    # Rodar testes com Jest
-    - name: Run Tests
-      run: npm run test
+      # Executar testes
+      - name: Run tests
+        run: npm test
 
-    # Construir o projeto
-    - name: Build Project
-      run: npm run build
+      # Login no Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-  docker-build-and-deploy:
-    needs: build-and-test
-    runs-on: ubuntu-latest
+      # Construir imagem Docker
+      - name: Build Docker image
+        run: docker build -t welliton07/devtechw7-backend:latest .
 
-    steps:
-    # Checkout do código
-    - name: Checkout Code
-      uses: actions/checkout@v3
+      # Push da imagem para o Docker Hub
+      - name: Push Docker image to Docker Hub
+        run: docker push welliton07/devtechw7-backend:latest
 
-    # Login no DockerHub
-    - name: Log in to DockerHub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+      # Login no Fly.io
+      - name: Login to Fly.io
+        run: fly auth token ${{ secrets.FLY_API_TOKEN }}
 
-    # Construir imagem Docker
-    - name: Build Docker Image
-      run: docker build -t ${{ secrets.DOCKER_USERNAME }}/devtechw7-backend:latest .
-
-    # Push da imagem Docker
-    - name: Push Docker Image
-      run: docker push ${{ secrets.DOCKER_USERNAME }}/devtechw7-backend:latest
-
-    # Login no Fly.io
-    - name: Login to Fly.io
-      run: flyctl auth token ${{ secrets.FLY_API_TOKEN }}
-
-    # Deploy no Fly.io
-    - name: Deploy to Fly.io
-      run: flyctl deploy --image ${{ secrets.DOCKER_USERNAME }}/devtechw7-backend:latest
+      # Deploy no Fly.io
+      - name: Deploy to Fly.io
+        run: fly deploy --remote-only
