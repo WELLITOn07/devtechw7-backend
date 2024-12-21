@@ -41,7 +41,7 @@ jobs:
         run: source $GITHUB_ENV
 
       - name: Log in to Fly.io
-        run: flyctl auth token ${{ secrets.FLY_API_TOKEN }}
+        run: echo ${{ secrets.FLY_API_TOKEN }} | flyctl auth login
 
       - name: Deploy to Fly.io
         run: flyctl deploy
