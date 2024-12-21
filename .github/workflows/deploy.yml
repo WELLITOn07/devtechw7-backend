@@ -47,8 +47,8 @@ jobs:
           curl -L https://fly.io/install.sh | sh
           echo "$HOME/.fly/bin" >> $GITHUB_PATH
 
-      - name: Authenticate Fly.io
-        run: echo ${{ secrets.FLY_API_TOKEN }} | flyctl auth token -
+      - name: Log in to Fly.io
+        run: echo ${{ secrets.FLY_API_TOKEN }} | flyctl auth login --access-token -
 
       - name: Deploy to Fly.io
         run: flyctl deploy
