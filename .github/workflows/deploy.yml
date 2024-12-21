@@ -1,18 +1,29 @@
-name: Build and Deploy to Fly.io
+name: Build, Test, and Deploy
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
+  pull_request:
 
 jobs:
-  build-and-deploy:
+  build-test-deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm run test
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -31,17 +42,13 @@ jobs:
           docker build -t ${{ secrets.DOCKER_USERNAME }}/devtechw7-backend:latest .
           docker push ${{ secrets.DOCKER_USERNAME }}/devtechw7-backend:latest
 
-      - name: Install Fly.io CLI
+      - name: Install Flyctl
         run: |
           curl -L https://fly.io/install.sh | sh
-          echo "FLYCTL_INSTALL=/home/runner/.fly" >> $GITHUB_ENV
-          echo "PATH=/home/runner/.fly/bin:$PATH" >> $GITHUB_ENV
-
-      - name: Export updated PATH
-        run: source $GITHUB_ENV
+          echo "$HOME/.fly/bin" >> $GITHUB_PATH
 
       - name: Log in to Fly.io
-        run: echo ${{ secrets.FLY_API_TOKEN }} | flyctl auth login
+        run: echo ${{ secrets.FLY_API_TOKEN }} | flyctl auth login --access-token -
 
       - name: Deploy to Fly.io
         run: flyctl deploy
